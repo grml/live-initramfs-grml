@@ -1,0 +1,60 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+upstream:
+	cd .. && git clone git://git.debian.org/git/users/daniel/live-initramfs.git || true
+	rm -rf ../live-initramfs/.git
+
+build: build-stamp
+build-stamp:
+	dh_testdir
+
+	# Building package
+	$(MAKE) -C manpages
+
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp
+
+	# Cleaning package
+	$(MAKE) -C manpages clean
+
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+
+	# Installing package
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/live-initramfs
+
+	# Removing double files
+	rm -f debian/live-initramfs/usr/share/doc/live-initramfs/COPYING
+	rm -f debian/live-initramfs/usr/share/doc/live-initramfs/ChangeLog
+	mv debian/live-initramfs/usr/share/doc/live-initramfs/ChangeLog.casper debian/live-initramfs/usr/share/doc/live-initramfs/changelog.casper
+
+binary-arch: build install
+
+binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs docs/ChangeLog
+	dh_installdocs
+	dh_install
+	dh_installinit --no-restart-on-upgrade --no-start -- start 89 0 6 .
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

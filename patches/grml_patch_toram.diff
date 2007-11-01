@@ -1,0 +1,25 @@
+--- a/scripts/live	2007-11-01 22:25:41.567739580 +0100
++++ b/scripts/live	2007-11-01 23:03:02.413731337 +0100
+@@ -609,9 +609,19 @@
+ 	else
+ 		if [ -n "${MODULETORAMFILE}" ]
+ 		then
+-			cp ${MODULETORAMFILE} ${copyto} # copy only the filesystem module
+-		else
+-			cp -a ${copyfrom}/* ${copyto}   # "cp -a" from busybox also copies hidden files
++                        log_begin_msg "Copying $MODULETORAMFILE to RAM" >/dev/console
++			if [ -x /usr/bin/rsync ] ; then
++			   rsync -a --progress ${MODULETORAMFILE} ${copyto} 1>/dev/console # copy only the filesystem module
++			else
++			   cp ${MODULETORAMFILE} ${copyto} # copy only the filesystem module
++			fi
++        	else
++                        log_begin_msg "Copying medium to RAM" >/dev/console
++			if [ -x /usr/bin/rsync ] ; then
++			   rsync -a --progress ${copyfrom}/* ${copyto} 1>/dev/console  # "cp -a" from busybox also copies hidden files
++			else
++			   cp -a ${copyfrom}/* ${copyto}   # "cp -a" from busybox also copies hidden files
++			fi
+ 		fi
+ 
+ 		livefs_root
