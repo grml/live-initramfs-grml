@@ -1,4 +1,4 @@
-live-initramfs (1.110.4-2) unstable; urgency=low
+live-initramfs (1.110.4-2.grml01) unstable; urgency=low
 
   * Initial version, based on live-initramfs (1.110.4-1) by
     Daniel Baumann <daniel@debian.org>.
