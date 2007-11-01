@@ -1,0 +1,19 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 01_add_rsync.dpatch by  <mika@grml.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Add support for rsync
+
+@DPATCH@
+
+--- a/hooks/live	2007-11-01 22:26:49.063100777 +0100
++++ b/hooks/live	2007-11-01 22:27:28.560386219 +0100
+@@ -74,6 +74,8 @@
+ # Filesystem: ext3
+ manual_add_modules ext3
+ 
++copy_exec /usr/bin/rsync
++
+ # Filesystem: squashfs
+ copy_exec /sbin/losetup /sbin
+ manual_add_modules loop

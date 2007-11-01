@@ -8,7 +8,7 @@ upstream:
 	rm -rf ../live-initramfs/.git
 
 build: build-stamp
-build-stamp:
+build-stamp: patch
 	dh_testdir
 
 	# Building package
@@ -16,7 +16,7 @@ build-stamp:
 
 	touch build-stamp
 
-clean:
+clean: unpatch
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp
@@ -25,6 +25,16 @@ clean:
 	$(MAKE) -C manpages clean
 
 	dh_clean
+
+patch: patch-stamp
+
+patch-stamp:
+	dpatch apply-all
+	dpatch cat-all >patch-stamp
+
+unpatch:
+	dpatch deapply-all
+	rm -rf patch-stamp debian/patched
 
 install: build
 	dh_testdir
