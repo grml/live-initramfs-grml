@@ -1,7 +1,12 @@
+live-initramfs (1.110.7-2~grml.02) unstable; urgency=low
+
+  * Add initial support for LZMA.
+
+ -- Michael Prokop <mika@grml.org>  Sun, 25 Nov 2007 21:43:16 +0100
+
 live-initramfs (1.110.7-2~grml.01) unstable; urgency=low
 
   * Rebase grml's version on live-initramfs (1.110.7-1).
-  * Add initial support for LZMA.
 
  -- Michael Prokop <mika@grml.org>  Sun, 25 Nov 2007 21:17:52 +0100
 
