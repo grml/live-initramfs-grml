@@ -1,2 +1,3 @@
 01_add_rsync.dpatch
 02_more_verbose_toram.diff
+03_support_for_lzma.diff
