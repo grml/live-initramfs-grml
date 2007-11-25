@@ -1,3 +1,11 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 03_support_for_lzma.diff
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: support LZMA compression at squashfs
+
+@DPATCH@
+
 --- a/hooks/live	2007-11-01 23:05:08.000000000 +0100
 +++ b/hooks/live	2007-11-25 21:39:28.000000000 +0100
 @@ -78,6 +78,8 @@
