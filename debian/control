@@ -3,7 +3,7 @@ Section: misc
 Priority: optional
 Maintainer: Debian Live <debian-live-maint@lists.alioth.debian.org>
 Uploaders: Daniel Baumann <daniel@debian.org>
-Build-Depends: debhelper (>= 5), asciidoc, docbook-xsl, xsltproc, dpatch
+Build-Depends: debhelper (>= 5), asciidoc, docbook-xsl, xsltproc
 Standards-Version: 3.7.2
 Homepage: http://debian-live.alioth.debian.org/
 Vcs-Git: git://git.debian.org/git/users/daniel/live-initramfs.git
@@ -12,7 +12,7 @@ XS-Upstream-Depends: git-core
 
 Package: live-initramfs
 Architecture: all
-Depends: ${misc:Depends}, busybox, file, initramfs-tools, sudo, user-setup
+Depends: ${misc:Depends}, busybox, file, initramfs-tools, sudo, udev, user-setup
 Recommends: eject, wget, live-initscripts
 Suggests: genext2fs, squashfs-tools
 Description: Debian Live initramfs hook

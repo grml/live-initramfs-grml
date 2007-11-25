@@ -8,7 +8,7 @@ upstream:
 	rm -rf ../live-initramfs/.git
 
 build: build-stamp
-build-stamp: patch
+build-stamp:
 	dh_testdir
 
 	# Building package
@@ -16,7 +16,7 @@ build-stamp: patch
 
 	touch build-stamp
 
-clean: unpatch
+clean:
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp
@@ -25,16 +25,6 @@ clean: unpatch
 	$(MAKE) -C manpages clean
 
 	dh_clean
-
-patch: patch-stamp
-
-patch-stamp:
-	dpatch apply-all
-	dpatch cat-all >patch-stamp
-
-unpatch:
-	dpatch deapply-all
-	rm -rf patch-stamp debian/patched
 
 install: build
 	dh_testdir
@@ -49,6 +39,9 @@ install: build
 	rm -f debian/live-initramfs/usr/share/doc/live-initramfs/COPYING
 	rm -f debian/live-initramfs/usr/share/doc/live-initramfs/ChangeLog
 	mv debian/live-initramfs/usr/share/doc/live-initramfs/ChangeLog.casper debian/live-initramfs/usr/share/doc/live-initramfs/changelog.casper
+
+	# Installing bug control
+	install -D -m 0755 debian/bug/script debian/live-initramfs/usr/share/bug/live-initramfs
 
 binary-arch: build install
 
