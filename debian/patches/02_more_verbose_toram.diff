@@ -6,18 +6,19 @@
 
 @DPATCH@
 
---- a/scripts/live	Mon Nov 26 00:11:21 2007 +0100
-+++ b/scripts/live	Wed Feb 20 15:57:57 2008 +0100
-@@ -593,7 +593,7 @@ copy_live_to ()
+--- a/scripts/live	Wed Feb 20 16:00:41 2008 +0100
++++ b/scripts/live	Wed Feb 20 17:57:04 2008 +0100
+@@ -593,8 +593,7 @@ copy_live_to ()
  
  	if [ "${freespace}" -lt "${size}" ]
  	then
 -		[ "${quiet}" != "y" ] && log_warning_msg "Not enough free ${free_string} (${freespace}k free, ${size}k needed) to copy live media in ${copytodev}."
-+		log_warning_msg "Not enough free ${free_string} (${freespace}k free, ${size}k needed) to copy live media in ${copytodev}."
- 		return 1
+-		return 1
++		echo " * Warning: Not enough free ${free_string} (${freespace}k free, ${size}k needed) to copy live media in ${copytodev}." >/dev/console
  	fi
  
-@@ -612,9 +612,19 @@ copy_live_to ()
+ 	# begin copying (or uncompressing)
+@@ -612,9 +611,19 @@ copy_live_to ()
  	else
  		if [ -n "${MODULETORAMFILE}" ]
  		then
