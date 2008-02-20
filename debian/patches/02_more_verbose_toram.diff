@@ -6,19 +6,27 @@
 
 @DPATCH@
 
---- a/scripts/live	Wed Feb 20 16:00:41 2008 +0100
-+++ b/scripts/live	Wed Feb 20 17:57:04 2008 +0100
-@@ -593,8 +593,7 @@ copy_live_to ()
+--- a/scripts/live	Wed Feb 20 17:57:40 2008 +0100
++++ b/scripts/live	Wed Feb 20 18:05:36 2008 +0100
+@@ -564,7 +564,7 @@ copy_live_to ()
+ 		then
+ 			size=$( expr $(ls -la ${MODULETORAMFILE} | awk '{print $5}') / 1024 + 5000 )
+ 		else
+-			log_warning_msg "Error: toram-module ${MODULETORAM} (${MODULETORAMFILE}) could not be read."
++			echo " * Error: toram-module ${MODULETORAM} (${MODULETORAMFILE}) could not be read." >/dev/console
+ 			return 1
+ 		fi
+ 	fi
+@@ -593,7 +593,7 @@ copy_live_to ()
  
  	if [ "${freespace}" -lt "${size}" ]
  	then
 -		[ "${quiet}" != "y" ] && log_warning_msg "Not enough free ${free_string} (${freespace}k free, ${size}k needed) to copy live media in ${copytodev}."
--		return 1
-+		echo " * Warning: Not enough free ${free_string} (${freespace}k free, ${size}k needed) to copy live media in ${copytodev}." >/dev/console
++		echo " * Error: Not enough free ${free_string} (${freespace}k free, ${size}k needed) to copy live media in ${copytodev}." >/dev/console
+ 		return 1
  	fi
  
- 	# begin copying (or uncompressing)
-@@ -612,9 +611,19 @@ copy_live_to ()
+@@ -612,9 +612,19 @@ copy_live_to ()
  	else
  		if [ -n "${MODULETORAMFILE}" ]
  		then

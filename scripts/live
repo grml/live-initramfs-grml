@@ -564,7 +564,7 @@ copy_live_to ()
 		then
 			size=$( expr $(ls -la ${MODULETORAMFILE} | awk '{print $5}') / 1024 + 5000 )
 		else
-			log_warning_msg "Error: toram-module ${MODULETORAM} (${MODULETORAMFILE}) could not be read."
+			echo " * Error: toram-module ${MODULETORAM} (${MODULETORAMFILE}) could not be read." >/dev/console
 			return 1
 		fi
 	fi
@@ -593,7 +593,7 @@ copy_live_to ()
 
 	if [ "${freespace}" -lt "${size}" ]
 	then
-		[ "${quiet}" != "y" ] && log_warning_msg "Not enough free ${free_string} (${freespace}k free, ${size}k needed) to copy live media in ${copytodev}."
+		echo " * Error: Not enough free ${free_string} (${freespace}k free, ${size}k needed) to copy live media in ${copytodev}." >/dev/console
 		return 1
 	fi
 
@@ -612,9 +612,19 @@ copy_live_to ()
 	else
 		if [ -n "${MODULETORAMFILE}" ]
 		then
-			cp ${MODULETORAMFILE} ${copyto} # copy only the filesystem module
-		else
-			cp -a ${copyfrom}/* ${copyto}   # "cp -a" from busybox also copies hidden files
+			if [ -x /usr/bin/rsync ] ; then
+			echo " * Copying $MODULETORAMFILE to RAM" 1>/dev/console
+			   rsync -a --progress ${MODULETORAMFILE} ${copyto} 1>/dev/console # copy only the filesystem module
+			else
+			   cp ${MODULETORAMFILE} ${copyto} # copy only the filesystem module
+			fi
+        	else
+			if [ -x /usr/bin/rsync ] ; then
+			echo " * Copying medium to RAM" 1>/dev/console
+			   rsync -a --progress ${copyfrom}/* ${copyto} 1>/dev/console  # "cp -a" from busybox also copies hidden files
+			else
+			   cp -a ${copyfrom}/* ${copyto}   # "cp -a" from busybox also copies hidden files
+			fi
 		fi
 
 		livefs_root
