@@ -90,6 +90,8 @@ manual_add_modules jffs2
 copy_exec /sbin/losetup /sbin
 manual_add_modules loop
 manual_add_modules squashfs
+manual_add_modules sqlzma
+manual_add_modules unlzma
 
 # Filesystem: aufs/unionfs
 manual_add_modules aufs
