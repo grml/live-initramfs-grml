@@ -1,0 +1,32 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 05_get_rid_of_wrong_debug_message.dpatch.dpatch by  <mika@grml.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Get rid of a wrong placed debug message
+
+@DPATCH@
+
+From 564f7a29349bb7d2cae214773117befce663e6dd Mon Sep 17 00:00:00 2001
+From: Michael Prokop <mika@grml.org>
+Date: Thu, 17 Jul 2008 12:57:15 +0200
+Subject: [PATCH 1/1] Get rid of wrong placed debug message
+
+
+Signed-off-by: Michael Prokop <mika@grml.org>
+
+diff --git a/scripts/live b/scripts/live
+index 15710c2..211367e 100755
+--- a/scripts/live
++++ b/scripts/live
+@@ -1030,7 +1030,7 @@ setup_unionfs ()
+ 			fi
+ 
+ 			mkdir -p "${croot}/${imagename}"
+-			echo "debug: Mounting backdev \"${backdev}\" (image = ${image}) on croot/imagename \"${croot}/${imagename}\""
++			[ -n "$DEBUG" ] && echo "debug: Mounting backdev \"${backdev}\" (image = ${image}) on croot/imagename \"${croot}/${imagename}\""
+ 			mount -t "${fstype}" -o ro,noatime "${backdev}" "${croot}/${imagename}" || panic "Can not mount ${backdev} (${image}) on ${croot}/${imagename}" && rofsstring="${croot}/${imagename}=${roopt}:${rofsstring}" && rofslist="${croot}/${imagename} ${rofslist}"
+ 		fi
+ 	done
+-- 
+1.5.5.4
+

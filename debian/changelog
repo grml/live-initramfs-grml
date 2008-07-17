@@ -1,8 +1,10 @@
 live-initramfs (1.136.2-2~grml.00) unstable; urgency=low
 
   * Rebase against current version of live-initramfs in Debian.
+  * Add debian/patches/04_fix_cow_tmpfs_mount.dpatch and
+    debian/patches/05_get_rid_of_wrong_debug_message.dpatch.
 
- -- Michael Prokop <mika@grml.org>  Thu, 17 Jul 2008 10:27:51 +0200
+ -- Michael Prokop <mika@grml.org>  Thu, 17 Jul 2008 13:02:10 +0200
 
 live-initramfs (1.136.2-1) unstable; urgency=medium
 

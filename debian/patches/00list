@@ -1,3 +1,5 @@
 01_add_rsync.dpatch
 02_more_verbose_toram.diff
 03_support_for_lzma.diff
+04_fix_cow_tmpfs_mount.dpatch
+05_get_rid_of_wrong_debug_message.dpatch
