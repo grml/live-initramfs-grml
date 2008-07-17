@@ -6,11 +6,11 @@
 
 @DPATCH@
 
---- a/hooks/live	2007-11-01 22:26:49.063100777 +0100
-+++ b/hooks/live	2007-11-01 22:27:28.560386219 +0100
-@@ -74,6 +74,8 @@
- # Filesystem: ext3
- manual_add_modules ext3
+--- a/hooks/live	Thu Jul 17 14:16:44 2008 +0200
++++ b/hooks/live	Thu Jul 17 14:17:05 2008 +0200
+@@ -86,6 +86,8 @@ manual_add_modules ext3
+ # Filesystem: jffs2
+ manual_add_modules jffs2
  
 +copy_exec /usr/bin/rsync
 +

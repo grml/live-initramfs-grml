@@ -6,9 +6,9 @@
 
 @DPATCH@
 
---- a/scripts/live	Wed Feb 20 17:57:40 2008 +0100
-+++ b/scripts/live	Wed Feb 20 18:05:36 2008 +0100
-@@ -564,7 +564,7 @@ copy_live_to ()
+--- a/scripts/live	Thu Jul 17 14:17:15 2008 +0200
++++ b/scripts/live	Thu Jul 17 14:17:24 2008 +0200
+@@ -582,7 +582,7 @@ copy_live_to ()
  		then
  			size=$( expr $(ls -la ${MODULETORAMFILE} | awk '{print $5}') / 1024 + 5000 )
  		else
@@ -17,7 +17,7 @@
  			return 1
  		fi
  	fi
-@@ -593,7 +593,7 @@ copy_live_to ()
+@@ -611,7 +611,7 @@ copy_live_to ()
  
  	if [ "${freespace}" -lt "${size}" ]
  	then
@@ -26,7 +26,7 @@
  		return 1
  	fi
  
-@@ -612,9 +612,19 @@ copy_live_to ()
+@@ -630,9 +630,19 @@ copy_live_to ()
  	else
  		if [ -n "${MODULETORAMFILE}" ]
  		then
