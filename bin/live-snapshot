@@ -2,15 +2,17 @@
 
 # live-snapshot - utility to manage Debian Live systems snapshots
 #
-#   This program mount a device (fallback to /tmpfs under /mnt/snapshot
-#   and save the /live/cow (or a different dir) filesystem in it for reusing
-#   in another live-initramfs session. Look at manpage for more info.
+#   This program mounts a device (fallback to /tmpfs under $MOUNTP
+#   and saves the /live/cow (or a different directory) filesystem in it
+#   for reuse in another live-initramfs session.
+#   Look at the manpage for more informations.
 #
-# Copyright (C) 2006 Marco Amadori <marco.amadori@gmail.com>
+# Copyright (C) 2006-2008 Marco Amadori <marco.amadori@gmail.com>
+# Copyright (C) 2008 Chris Lamb <chris@chris-lamb.co.uk>
 #
-# This program is free software; you can redistribute it and/or modify
+# This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
@@ -19,75 +21,65 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 # On Debian systems, the complete text of the GNU General Public License
-# can be found in /usr/share/common-licenses/GPL-2 file.
+# can be found in /usr/share/common-licenses/GPL-3 file.
 
-PROGRAM="$(basename $0)"
-VERSION=0.0.1
+# declare here two vars from /etc/live.conf because of "set -u"
+ROOTSNAP=""
+HOMESNAP=""
 
-# Source live conf
-if [ -e /etc/live.conf ]
-then
-	. /etc/live.conf
-else
-	USERNAME=$(cat /etc/passwd | grep "999" | cut -f1 -d ':')
-	HOSTNAME=$(hostname)
-fi
+set -eu
+
+. /usr/share/initramfs-tools/scripts/live-helpers
+
+LIVE_CONF="/etc/live.conf"
+. "${LIVE_CONF}"
 
 export USERNAME USERFULLNAME HOSTNAME
 
-# Source helper functions
-helpers="/usr/share/initramfs-tools/scripts/live-helpers"
+EXECUTABLE="${0}"
+PROGRAM=$(basename "${EXECUTABLE}")
 
-if [ -e "${helpers}" ]
-then
-	. "${helpers}"
-else
-	echo "Error: I cannot found helper functions \"${helpers}\"."
+# Needs to be available at run and reboot time
+SAFE_TMPDIR="/live"
+
+# Permits multiple runs
+MOUNTP="$(mktemp -d -p ${SAFE_TMPDIR} live-snapshot-mnt.XXXXXX)"
+DEST="${MOUNTP}/live-sn.cpio.gz"
+DEF_SNAP_COW="/live/cow"
+TMP_FILELIST="${PROGRAM}.list"
+
+# Command line defaults and declarations
+SNAP_COW="${DEF_SNAP_COW}"
+SNAP_DEV=""
+SNAP_OUTPUT=""
+SNAP_RESYNC_STRING=""
+SNAP_TYPE="cpio"
+SNAP_LIST="/etc/live-snapshot.list"
+
+Error ()
+{
+	echo "${PROGRAM}: error:" ${@}
 	exit 1
-fi
+}
 
-# Define LSB log_* functions.
-# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
-. /lib/lsb/init-functions
-
-MOUNTP=""
-COW=""
-DEV=""
-DEST=""
-TYPE=""
-DESKTOP_LINK=""
+panic ()
+{
+	Error ${@}
+}
 
 Header ()
 {
-	echo "${PROGRAM} - utility to do Debian Live snapshots"
+	echo "${PROGRAM} - utility to perform snapshots of Debian Live systems"
 	echo
-	echo "Usage: ${PROGRAM} [-c|--cow DIRECTORY] [-d|--device DEVICE] [-o|--output FILE] [-t|--type TYPE]"
-	echo "Usage: ${PROGRAM} [-r|--resync-string STRING]"
-	echo "Usage: ${PROGRAM} [-h|--help]"
-	echo "Usage: ${PROGRAM} [-u|--usage]"
-	echo "Usage: ${PROGRAM} [-v|--version]"
-}
-
-Usage ()
-{
-	MESSAGE=${1}
-
-	Header
-
-	echo
-	echo "Try \"${PROGRAM} --help\" for more information."
-
-	if [ ! -z "${MESSAGE}" ]
-	then
-		/bin/echo -e "${MESSAGE}"
-		exit 1
-	else
-		exit 0
-	fi
+	echo "usage: ${PROGRAM} [-c|--cow DIRECTORY] [-d|--device DEVICE] [-o|--output FILE] [-t|--type TYPE]"
+	echo "       ${PROGRAM} [-r|--resync-string STRING]"
+	echo "       ${PROGRAM} [-f|--refresh]"
+	echo "       ${PROGRAM} [-h|--help]"
+	echo "       ${PROGRAM} [-u|--usage]"
+	echo "       ${PROGRAM} [-v|--version]"
 }
 
 Help ()
@@ -96,21 +88,34 @@ Help ()
 
 	echo
 	echo "Options:"
-	echo "  -c, --cow: specifies the copy on write directory (default: /live/cow)."
-	echo "  -d, --device: specifies the output snapshot device (default: none)."
-	echo "  -o, --output: specifies the output image file (default: ${type} dependent)."
+	echo "  -c, --cow: copy on write directory (default: ${SNAP_COW})."
+	echo "  -d, --device: output snapshot device (default: ${SNAP_DEV:-auto})."
+	echo "  -o, --output: output image file (default: ${DEST})."
 	echo "  -r, --resync-string: internally used to resync previous made snapshots."
-	echo "  -t, --type: specifies the snapshot type between \"squashfs\", \"ext2\", \"ext3\" or \"cpio\".gz archive (default: cpio)"
-	/bin/echo -e "\nLook at live-snapshot(1) man page for more information."
+	echo "  -f, --refresh: try to sync a running snapshot."
+	echo "  -t, --type: snapshot filesystem type. Options: \"squashfs\", \"ext2\", \"ext3\", \"jffs2\" or \"cpio\".gz archive (default: ${SNAP_TYPE})"
+	echo
+	echo "Look at live-snapshot(1) man page for more information."
+
+	exit 0
+}
+
+Usage ()
+{
+	Header
+
+	echo
+	echo "Try \"${PROGRAM} --help\" for more information."
 
 	exit 0
 }
 
 Version ()
 {
-	echo "${PROGRAM}, version ${VERSION}"
+	echo "${PROGRAM}"
 	echo
 	echo "Copyright (C) 2006 Marco Amadori <marco.amadori@gmail.com>"
+	echo "Copyright (C) 2008 Chris Lamb <chris@chris-lamb.co.uk>"
 	echo
 	echo "This program is free software; you can redistribute it and/or modify"
 	echo "it under the terms of the GNU General Public License as published by"
@@ -134,57 +139,32 @@ Version ()
 	exit 0
 }
 
-Do_snapshot ()
+Try_refresh ()
 {
-	case "${TYPE}" in
-		squashfs)
-			echo "./tmp/exclude_list" > /tmp/exclude_list
-			( cd "${COW}" && find . -name '*.wh.*' >> /tmp/exclude_list )
-			mksquashfs "${COW}" "${DEST}" -ef /tmp/exclude_list || exit 1
-			rm /tmp/exclude_list
-			;;
+	FOUND=""
+	if [ -n "${ROOTSNAP}" ]; then
+		"${EXECUTABLE}" --resync-string="${ROOTSNAP}"
+		FOUND="Yes"
+	fi
 
-		cpio)
-			( cd "${COW}" && find . -path '*.wh.*' -prune -o -print0 | cpio --quiet -o0 -H newc | gzip -9c > "${DEST}" ) || exit 1
-			;;
+	if [ -n "${HOMESNAP}" ]; then
+		"${EXECUTABLE}" --resync-string="${HOMESNAP}"
+		FOUND="Yes"
+	fi
 
-		ext2|ext3)
-			DU_DIM="$(du -ks ${COW} | cut -f1)"
-			REAL_DIM="$(expr ${DU_DIM} + ${DU_DIM} / 20)" # Just 5% more to be sure, need something more sophistcated here...
-			genext2fs --size-in-blocks=${REAL_DIM} --reserved-blocks=0 --root="${COW}" "${DEST}" || exit 1
-			;;
-
-		*)
-			echo "Internal error."
-			exit 1
-			;;
-	esac
-}
-
-Is_same_mount ()
-{
-	dir1="$(Base_path ${1})"
-	dir2="$(Base_path ${2})"
-
-	if [ "${dir1}" = "${dir2}" ]
+	if [ -z "${FOUND}" ]
 	then
-		return 0
-	else
-		return 1
+		echo "No autoconfigured snapshots found at boot;" > /dev/null 1>&2
+		echo "(no resync string in ${LIVE_CONF})." > /dev/null 1>&2
+		exit 1
 	fi
 }
 
 Parse_args ()
 {
 	# Parse command line
-	ARGS="${1}"
-	ARGUMENTS="$(getopt --longoptions cow:,device:,output,resync-string:,type:,help,usage,version --name=${PROGRAM} --options c:d:o:t:r:,h,u,v --shell sh -- ${ARGS})"
-
-	if [ "${?}" != "0" ]
-	then
-		echo "Terminating." >&2
-		exit 1
-	fi
+	ARGS="${*}"
+	ARGUMENTS="$(getopt --longoptions cow:,device:,output,resync-string:,refresh,type:,help,usage,version --name=${PROGRAM} --options c:d:o:t:r:fhuv --shell sh -- ${ARGS})"
 
 	eval set -- "${ARGUMENTS}"
 
@@ -212,8 +192,13 @@ Parse_args ()
 				;;
 
 			-r|--resync-string)
-				SNAP_RSTRING="${2}"
+				SNAP_RESYNC_STRING="${2}"
 				break
+				;;
+
+			-f|--refresh)
+				Try_refresh
+				exit 0
 				;;
 
 			-h|--help)
@@ -234,115 +219,211 @@ Parse_args ()
 				;;
 
 			*)
-				echo "Internal error."; exit 1 ;;
+				Error "internal error."
+				;;
 
 		esac
 	done
 }
 
-Mount_device ()
-{
-	dev="${1}"
-
-	if [ ! -d "${MOUNTP}" ]
-	then
-		mkdir -p "${MOUNTP}"
-	fi
-
-	if [ -z "${dev}" ]
-	then
-		# create a temp
-		mount -t tmpfs -o rw tmpfs "${MOUNTP}"
-
-		if [ ! -L /home/${USERNAME}/Desktop/live-snapshot ]
-		then
-			ln -s "${MOUNTP}" /home/${USERNAME}/Desktop/live-snapshot
-		fi
-	else
-		if [ -b "${dev}" ]
-		then
-			try_mount "${dev}" "${MOUNTP}" rw
-		fi
-	fi
-}
-
 Defaults ()
 {
-	MOUNTP="/mnt/live-snapshot"
-	COW="/live/cow"
-	DEV=""
-	DEST="${MOUNTP}/live-sn.cpio.gz"
-	TYPE="cpio"
-	DESKTOP_LINK=/home/${USERNAME}/Desktop/live-snapshot
-
-	if [ -n "${SNAP_RSTRING}" ]
+	# Parse resync string
+	if [ -n "${SNAP_RESYNC_STRING}" ]
 	then
-		COW=$(echo "${SNAP_RSTRING}" | cut -f1 -d ':')
-		DEV=$(echo "${SNAP_RSTRING}" | cut -f2 -d ':')
-		DEST=$(echo "${SNAP_RSTRING}" | cut -f3 -d ':')
+		SNAP_COW=$(echo "${SNAP_RESYNC_STRING}" | cut -f1 -d ':')
+		SNAP_DEV=$(echo "${SNAP_RESYNC_STRING}" | cut -f2 -d ':')
+		DEST="${MOUNTP}/$(echo ${SNAP_RESYNC_STRING} | cut -f3 -d ':')"
 
 		case "${DEST}" in
 			*.cpio.gz)
-				TYPE="cpio"
+				SNAP_TYPE="cpio"
 				;;
 
 			*.squashfs)
-				TYPE="squashfs"
+				SNAP_TYPE="squashfs"
+				;;
+
+			*.jffs2)
+				SNAP_TYPE="jffs2"
 				;;
 
 			""|*.ext2|*.ext3)
-				TYPE="ext2"
+				SNAP_TYPE="ext2"
+				;;
+			*)
+				Error "unrecognized resync string"
+				;;
+		esac
+	elif [ -z "${SNAP_OUTPUT}" ]
+	then
+		# Set target file based on image
+		case "${SNAP_TYPE}" in
+			cpio)
+				DEST="${MOUNTP}/live-sn.cpio.gz"
 				;;
 
-			*)
-				Usage "Unregognized String"
+			squashfs|jffs2|ext2)
+				DEST="${MOUNTP}/live-sn.${SNAP_TYPE}"
+				;;
+
+			ext3)
+				DEST="${MOUNTP}/live-sn.ext2"
 				;;
 		esac
 	else
-		DEF_COW="/live/cow"
-
-		# Bad options handling
-		if [ -z "${SNAP_COW}" ]
-		then
-			COW="${DEF_COW}"
-		else
-			COW="${SNAP_COW}"
-		fi
-
-		case "${SNAP_TYPE}" in
-			"cpio"|"squashfs"|"ext2"|"ext3")
-				TYPE="${SNAP_TYPE}"
-				;;
-
-			"")
-				TYPE="cpio"
-				;;
-
-			*)
-				Usage "Error: unrecognized snapshot type"
-				;;
-		esac
-
-		#if [ -d
-		#if Is_same_mount
+		DEST="${SNAP_OUTPUT}"
 	fi
+}
 
-	# check vars
-	if [ ! -d "${COW}" ]
+Validate_input ()
+{
+	case "${SNAP_TYPE}" in
+		cpio|squashfs|jffs2|ext2|ext3)
+			;;
+
+		*)
+			Error "invalid filesystem type \"${SNAP_TYPE}\""
+			;;
+	esac
+
+	if [ ! -d "${SNAP_COW}" ]
 	then
-		Usage "Error: ${COW} is not a directory"
+		Error "${SNAP_COW} is not a directory"
 	fi
 
-	Mount_device ${DEV}
+	if [ "$(id -u)" -ne 0 ]
+	then
+		Error "you are not root"
+	fi
+}
+
+Mount_device ()
+{
+	case "${SNAP_DEV}" in
+		"")
+			# create a temp
+			mount -t tmpfs -o rw tmpfs "${MOUNTP}"
+			;;
+
+		*)
+			if [ -b "${SNAP_DEV}" ]
+			then
+				try_mount "${SNAP_DEV}" "${MOUNTP}" rw
+			fi
+			;;
+	esac
+}
+
+Do_filelist ()
+{
+	# BUGS: supports only cpio.gz types right now
+	TMP_FILELIST=$1
+	if [ -f "${SNAP_LIST}" ]
+	then
+		# Generate include list
+		for entry in $(cat "${SNAP_LIST}" | grep -v '^#.*$' | grep -v '^ *$')
+		do
+			if [ -f "${entry}" ]
+			then
+				printf "%s\000" "${entry}" >> "${TMP_FILELIST}"
+			elif [ -d "${entry}" ]
+			then
+				cd /
+				find "${entry}" -print0 >> "${TMP_FILELIST}"
+				cd "${OLDPWD}"
+			fi
+		done
+
+		if [ "${SNAP_COW}" = "${DEF_SNAP_COW}" ]
+		then
+			# Relative to rootfs
+			echo "/"
+		else
+			# Mostly "/home"
+			echo "${SNAP_COW}"
+		fi
+	else
+		cd "${SNAP_COW}"
+		find . -path '*.wh.*' -prune -o -print0 >> "${TMP_FILELIST}"
+		cd "${OLDPWD}"
+		echo "${SNAP_COW}"
+	fi
+}
+
+Do_snapshot ()
+{
+	TMP_FILELIST=$(mktemp -p "${SAFE_TMPDIR}" "${TMP_FILELIST}.XXXXXX")
+
+	case "${SNAP_TYPE}" in
+		squashfs)
+			echo ".${TMP_FILELIST}" > "${TMP_FILELIST}"
+			# Removing whiteheads of unionfs
+			cd "${SNAP_COW}"
+			find . -name '*.wh.*' >> "${TMP_FILELIST}"
+			cd "${OLDPWD}"
+			mksquashfs "${SNAP_COW}" "${DEST}" -ef "${TMP_FILELIST}"
+			;;
+
+		cpio)
+			WORKING_DIR=$(Do_filelist "${TMP_FILELIST}")
+			cd "${WORKING_DIR}"
+			cat "${TMP_FILELIST}" | cpio --quiet -o0 -H newc | gzip -9c > "${DEST}" || exit 1
+			cd "${OLDPWD}"
+			;;
+
+		ext2|ext3)
+			DU_DIM="$(du -ks ${SNAP_COW} | cut -f1)"
+			REAL_DIM="$(expr ${DU_DIM} + ${DU_DIM} / 20)" # Just 5% more to be sure, need something more sophistcated here...
+			genext2fs --size-in-blocks=${REAL_DIM} --reserved-percentage=0 --root="${SNAP_COW}" "${DEST}"
+			;;
+
+		jffs2)
+			mkfs.jffs2 --root="${SNAP_COW}" --output="${DEST}"
+			;;
+	esac
+
+	if [ -f "${TMP_FILELIST}" ]
+	then
+		rm -f "${TMP_FILELIST}"
+	fi
 }
 
 Clean ()
 {
-	if [ -n "${DEV}" ]
+	if [ -z "${SNAP_RESYNC_STRING}" ] && echo "${DEST}" | grep -q "${MOUNTP}"
 	then
+		echo "${DEST} is present on ${MOUNTP}, therefore no automatic unmounting the latter." > /dev/null 1>&2
+	else
 		umount "${MOUNTP}"
 		rmdir "${MOUNTP}"
-		#rm
+	fi
+}
+
+Warn_user ()
+{
+	if [ -z "${SNAP_RESYNC_STRING}" ]
+	then
+		case ${SNAP_TYPE} in
+			cpio|ext2|ext3)
+				echo "Please move ${DEST} (if is not already in it)" > /dev/null 1>&2
+				echo "in a supported writable partition (e.g ext3, vfat)." > /dev/null 1>&2
+				;;
+
+			squashfs)
+				echo "To use ${DEST} you need to rebuild your media or add it" > /dev/null 1>&2
+				echo "to your multisession disc under the \"/live\" directory." > /dev/null 1>&2
+				;;
+
+			jffs2)
+				echo "Please cat or flashcp ${DEST} to your partition in order to start using it." > /dev/null 1>&2
+				;;
+		esac
+
+		if grep -qv persistent /proc/cmdline
+		then
+			echo "Remember to boot this live system with \"persistent\" specified at boot prompt." > /dev/null 1>&2
+		fi
 	fi
 }
 
@@ -350,8 +431,11 @@ Main ()
 {
 	Parse_args "${@}"
 	Defaults
+	Validate_input
+	trap 'Clean' EXIT
+	Mount_device
 	Do_snapshot
-	Clean
+	Warn_user
 }
 
-Main "${@}"
+Main "${@:-}"

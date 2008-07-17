@@ -4,17 +4,17 @@ Priority: optional
 Maintainer: Debian Live <debian-live-maint@lists.alioth.debian.org>
 Uploaders: Daniel Baumann <daniel@debian.org>
 Build-Depends: debhelper (>= 5), asciidoc, docbook-xsl, xsltproc
-Standards-Version: 3.7.2
+Standards-Version: 3.8.0
 Homepage: http://debian-live.alioth.debian.org/
-Vcs-Git: git://git.debian.org/git/users/daniel/live-initramfs.git
-Vcs-Browser: http://git.debian.org/?p=users/daniel/live-initramfs.git
+Vcs-Browser: http://git.debian.net/?p=live-initramfs.git
+Vcs-Git: git://git.debian.net/git/live-initramfs.git
 XS-Upstream-Depends: git-core
 
 Package: live-initramfs
 Architecture: all
 Depends: ${misc:Depends}, busybox, file, initramfs-tools, sudo, udev, user-setup
-Recommends: eject, wget, live-initscripts
-Suggests: genext2fs, squashfs-tools
+Recommends: eject, loop-aes-utils, uuid-runtime, wget
+Suggests: curlftpfs, genext2fs (>= 1.4.1), httpfs2, squashfs-tools, mtd-tools
 Description: Debian Live initramfs hook
  live-initramfs is a hook for the initramfs-tools, used to generate a initramfs
  capable to boot live systems, such as those created by live-helper. This
@@ -23,7 +23,7 @@ Description: Debian Live initramfs hook
  At boot time it will look for a (read-only) media containing a "/live"
  directory where a root filesystems (often a compressed filesystem image like
  squashfs) is stored. If found, it will create a writable environment, using
- unionfs, for Debian like systems to boot from.
+ aufs or unionfs, for Debian like systems to boot from.
  .
  You probably do not want to install this package onto a non-live system,
  although it will do no harm.

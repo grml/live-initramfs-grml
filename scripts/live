@@ -60,6 +60,21 @@ Arguments ()
                                 export FETCH
                                 ;;
 
+			hook=*)
+				HOOK="${ARGUMENT#hook=}"
+				export HOOK
+				;;
+
+			ftpfs=*)
+				FTPFS="${ARGUMENT#ftpfs=}"
+				export FTPFS
+				;;
+
+			httpfs=*)
+				HTTPFS="${ARGUMENT#httpfs=}"
+				export HTTPFS
+				;;
+
 			hostname=*)
 				HOSTNAME="${ARGUMENT#hostname=}"
 				LIVECONF="changed"
@@ -149,6 +164,12 @@ Arguments ()
 				export LIVE_MEDIA_TIMEOUT
 				;;
 
+			language=*|debian-installer/language=*)
+				language=${x#debian-installer/language=}
+				locale="$(lang2locale "$language")"
+				set_locale="true"
+				;;
+
 			locale=*|debian-installer/locale=*)
 				LOCALE="${ARGUMENT#*=}"
 				export LOCALE
@@ -227,11 +248,6 @@ Arguments ()
 			nokpersonalizer)
 				NOKPERSONALIZER="Yes"
 				export NOKPERSONALIZER
-				;;
-
-			nokwallet)
-				NOKWALLET="Yes"
-				export NOKWALLET
 				;;
 
 			nolanguageselector)
@@ -322,9 +338,9 @@ Arguments ()
 				mount -n -o bind /dev /root/dev
 
 				mkdir -p /root/var/run/network
-				chroot /root ifup -a
+				chroot /root dhclient eth0
 				chroot /root wget -P /tmp "${location}"
-				chroot /root ifdown -a
+				chroot /root ifconfig eth0 down
 
 				umount /root/sys
 				umount /root/proc
@@ -381,6 +397,16 @@ Arguments ()
 				export EXPOSED_ROOT
 				;;
 
+			plainroot)
+				PLAIN_ROOT="Yes"
+				export PLAIN_ROOT
+				;;
+
+			root=*)
+				ROOT="${ARGUMENT#root=}"
+				export ROOT
+				;;
+
 			union=*)
 				UNIONTYPE="${ARGUMENT#union=}"
 				export UNIONTYPE
@@ -394,6 +420,11 @@ Arguments ()
 			xdebconf)
 				XDEBCONF="Yes"
 				export XDEBCONF
+				;;
+
+			xdriver=*)
+			        XDRIVER="${ARGUMENT#xdriver=}"
+				export XDRIVER
 				;;
 
 			xvideomode=*)
@@ -425,7 +456,7 @@ Arguments ()
 
 	if [ -z "${UNIONTYPE}" ]
 	then
-		UNIONTYPE="unionfs"
+		UNIONTYPE="aufs"
 		export UNIONTYPE
 	fi
 }
@@ -436,7 +467,7 @@ is_live_path ()
 
 	if [ -d "${DIRECTORY}"/"${LIVE_MEDIA_PATH}" ]
 	then
-		for FILESYSTEM in squashfs ext2 ext3 xfs dir
+		for FILESYSTEM in squashfs ext2 ext3 xfs dir jffs2
 		do
 			if [ "$(echo ${DIRECTORY}/${LIVE_MEDIA_PATH}/*.${FILESYSTEM})" != "${DIRECTORY}/${LIVE_MEDIA_PATH}/*.${FILESYSTEM}" ]
 			then
@@ -458,7 +489,7 @@ matches_uuid ()
 	path="${1}"
 	uuid="$(cat /conf/uuid.conf)"
 
-	for try_uuid_file in "${mountpoint}/.disk/casper-uuid"*
+	for try_uuid_file in "${mountpoint}/.disk/live-uuid"*
 	do
 		[ -e "${try_uuid_file}" ] || continue
 
@@ -476,8 +507,8 @@ matches_uuid ()
 get_backing_device ()
 {
 	case "${1}" in
-		*.squashfs|*.ext2|*.ext3)
-			echo $(setup_loop "${1}" "loop" "/sys/block/loop*" '0' "${LIVE_MEDIA_ENCRYPTION}")
+		*.squashfs|*.ext2|*.ext3|*.jffs2)
+			echo $(setup_loop "${1}" "loop" "/sys/block/loop*" '0' "${LIVE_MEDIA_ENCRYPTION}" "${2}")
 			;;
 
 		*.dir)
@@ -513,6 +544,7 @@ mount_images_in_directory ()
 	if match_files_in_dir "${directory}/${LIVE_MEDIA_PATH}/*.squashfs" ||
 		match_files_in_dir "${directory}/${LIVE_MEDIA_PATH}/*.ext2" ||
 		match_files_in_dir "${directory}/${LIVE_MEDIA_PATH}/*.ext3" ||
+		match_files_in_dir "${directory}/${LIVE_MEDIA_PATH}/*.jffs2" ||
 		match_files_in_dir "${directory}/${LIVE_MEDIA_PATH}/*.dir"
 	then
 		[ -n "${mac}" ] && adddirectory="${directory}/${LIVE_MEDIA_PATH}/${mac}"
@@ -530,20 +562,6 @@ is_nice_device ()
 	then
 		return 0
 	fi
-
-	return 1
-}
-
-is_supported_fs ()
-{
-	# FIXME: do something better like the scan of supported filesystems
-	fstype="${1}"
-
-	case ${fstype} in
-		vfat|iso9660|udf|ext2|ext3|ntfs)
-			return 0
-			;;
-	esac
 
 	return 1
 }
@@ -607,7 +625,7 @@ copy_live_to ()
 		cd "${copyto}"
 		tar zxf "${copyfrom}/${LIVE_MEDIA_PATH}/$(basename ${FETCH})"
 		rm -f "${copyfrom}/${LIVE_MEDIA_PATH}/$(basename ${FETCH})"
-		mount -r --move "${copyto}" "${rootmnt}"
+		mount -r -o move "${copyto}" "${rootmnt}"
 		cd "${OLDPWD}"
 	else
 		if [ -n "${MODULETORAMFILE}" ]
@@ -619,7 +637,7 @@ copy_live_to ()
 
 		livefs_root
 		umount ${copyfrom}
-		mount -r --move ${copyto} ${copyfrom}
+		mount -r -o move ${copyto} ${copyfrom}
 	fi
 
 	rmdir ${copyto}
@@ -632,8 +650,16 @@ do_netmount ()
 
 	modprobe -q af_packet # For DHCP
 
-	udevtrigger
-	udevsettle
+	if [ -x /sbin/udevadm ]
+	then
+		# lenny
+		udevadm trigger
+		udevadm settle
+	else
+		# etch
+		udevtrigger
+		udevsettle
+	fi
 
 	ipconfig ${DEVICE} | tee /netboot.config
 
@@ -648,7 +674,7 @@ do_netmount ()
 		NFSROOT=${ROOTSERVER}:${ROOTPATH}
 	fi
 
-	if [ -n "${FETCH}" ] && do_httpmount
+	if ( [ -n "${FETCH}" ] || [ -n "${HTTPFS}" ] || [ -n "${FTPFS}" ] ) && do_httpmount
 	then
 		rc=0
 		return ${rc}
@@ -678,20 +704,53 @@ do_netmount ()
 do_httpmount ()
 {
 	rc=1
-	extension=$(echo "${FETCH}" | sed 's/\(.*\)\.\(.*\)/\2/')
+	dest="${mountpoint}/${LIVE_MEDIA_PATH}"
+	mount -t ramfs ram "${mountpoint}"
+	mkdir -p "${dest}"
 
-	case "${extension}" in
-		squashfs|tgz|tar)
-			[ "${quiet}" != "y" ] && log_begin_msg "Trying wget ${FETCH} -O ${mountpoint}/$(basename ${FETCH})"
-			mkdir -p "${mountpoint}/${LIVE_MEDIA_PATH}"
-			wget "${FETCH}" -O "${mountpoint}/${LIVE_MEDIA_PATH}/$(basename ${FETCH})"
-			[ ${?} -eq 0 ] && rc=0
-			[ "${extension}" = "tgz" ] && live_dest="ram"
-			;;
+	for webfile in HTTPFS FTPFS FETCH
+	do
+		url="$(eval echo \"\$\{${webfile}\}\")"
+		extension="$(echo "${url}" | sed 's/\(.*\)\.\(.*\)/\2/')"
 
-		*)
-			[ "${quiet}" != "y" ] && log_begin_msg "Unrecognized archive extension for ${FETCH}"
-	esac
+		if [ -n "$url" ]
+		then
+			case "${extension}" in
+				squashfs|tgz|tar)
+					if [ "${webfile}" = "FETCH" ]
+					then
+						[ "${quiet}" != "y" ] &&
+							log_begin_msg "Trying wget ${url} -O ${dest}/$(basename ${url})"
+						wget "${url}" -O "${dest}/$(basename ${url})"
+					else
+						[ "${quiet}" != "y" ] &&
+							log_begin_msg "Trying to mount ${url} on ${dest}/$(basename ${url})"
+						if [ "${webfile}" = "FTPFS" ]
+						then
+							FUSE_MOUNT="curlftpfs"
+							url="$(dirname ${url})"
+						else
+							FUSE_MOUNT="httpfs"
+						fi
+						modprobe fuse
+						$FUSE_MOUNT "${url}" "${dest}"
+					fi
+					[ ${?} -eq 0 ] && rc=0
+					[ "${extension}" = "tgz" ] && live_dest="ram"
+					break
+					;;
+
+				*)
+					[ "${quiet}" != "y" ] && log_begin_msg "Unrecognized archive extension for ${url}"
+					;;
+			esac
+		fi
+	done
+
+	if [ ${rc} != 0 ]
+	then
+	    umount "${mountpoint}"
+	fi
 
 	return ${rc}
 }
@@ -804,7 +863,7 @@ try_snap ()
 	snap_label="${1}"
 	snap_mount="${2}"
 	snap_type="${3}"
-	snapdata=$(find_files "${snap_label}.squashfs ${snap_label}.cpio.gz ${snap_label}.ext2 ${snap_label}.ext3")
+	snapdata=$(find_files "${snap_label}.squashfs ${snap_label}.cpio.gz ${snap_label}.ext2 ${snap_label}.ext3 ${snap_label}.jffs2")
 
 	if [ ! -z "${snapdata}" ]
 	then
@@ -812,9 +871,9 @@ try_snap ()
 		snapback="$(echo ${snapdata} | cut -f2 -d ' ')"
 		snapfile="$(echo ${snapdata} | cut -f3 -d ' ')"
 
-		if echo "${snapfile}" | grep -qs '\(squashfs\|ext2\|ext3\)'
+		if echo "${snapfile}" | grep -qs '\(squashfs\|ext2\|ext3\|jffs2\)'
 		then
-			# squashfs or ext2/ext3 snapshot
+			# squashfs, jffs2 or ext2/ext3 snapshot
 			dev=$(get_backing_device "${snapback}/${snapfile}")
 
 			if ! do_snap_copy "${dev}" "${snap_mount}" "${snap_type}"
@@ -824,7 +883,7 @@ try_snap ()
 			fi
 		else
 			# cpio.gz snapshot
-			if ! (cd "${snap_mount}" && zcat "${snapback}/${snapfile}" | cpio -i -u -d 2>/dev/null)
+			if ! (cd "${snap_mount}" && zcat "${snapback}/${snapfile}" | cpio --extract --preserve-modification-time --no-absolute-filenames --sparse --unconditional --make-directories > /dev/null 2>&1)
 			then
 				log_warning_msg "Impossible to include the ${snapfile} Snapshot"
 				return 1
@@ -891,6 +950,9 @@ setup_unionfs ()
 	then
 		# go aroung a bug in nfs-unionfs locking for unionfs <= 1.4
 		roopt="nfsro"
+	elif [ "${UNIONTYPE}" = "aufs" ]
+	then
+		roopt="rr"
 	else
 		roopt="ro"
 	fi
@@ -910,7 +972,7 @@ setup_unionfs ()
 		done
 	else
 		# ${MODULE}.module does not exist, create a list of images
-		for FILESYSTEM in squashfs ext2 ext3 xfs dir
+		for FILESYSTEM in squashfs ext2 ext3 xfs jffs2 dir
 		do
 			for IMAGE in "${image_directory}"/*."${FILESYSTEM}"
 			do
@@ -923,7 +985,7 @@ setup_unionfs ()
 
 		if [ -n "${addimage_directory}" ] && [ -d "${addimage_directory}" ]
 		then
-			for FILESYSTEM in squashfs ext2 ext3 xfs dir
+			for FILESYSTEM in squashfs ext2 ext3 xfs jffs2 dir
 			do
 				for IMAGE in "${addimage_directory}"/*."${FILESYSTEM}"
 				do
@@ -954,7 +1016,12 @@ setup_unionfs ()
 			rofslist="${image} ${rofslist}"
 		elif [ -f "${image}" ]
 		then
-			backdev=$(get_backing_device "${image}")
+			if /sbin/losetup --help 2>&1 | grep -q -- "-r\b"
+			then
+				backdev=$(get_backing_device "${image}" "-r")
+			else
+				backdev=$(get_backing_device "${image}")
+			fi
 			fstype=$(get_fstype "${backdev}")
 
 			if [ "${fstype}" = "unknown" ]
@@ -963,7 +1030,7 @@ setup_unionfs ()
 			fi
 
 			mkdir -p "${croot}/${imagename}"
-			echo "debug: Can not mount backdev ${backdev} (image = ${image}) on croot/imagename ${croot}/${imagename}"
+			echo "debug: Mounting backdev \"${backdev}\" (image = ${image}) on croot/imagename \"${croot}/${imagename}\""
 			mount -t "${fstype}" -o ro,noatime "${backdev}" "${croot}/${imagename}" || panic "Can not mount ${backdev} (${image}) on ${croot}/${imagename}" && rofsstring="${croot}/${imagename}=${roopt}:${rofsstring}" && rofslist="${croot}/${imagename} ${rofslist}"
 		fi
 	done
@@ -973,20 +1040,54 @@ setup_unionfs ()
 	mkdir -p /cow
 
 	# Looking for "${root_persistence}" device or file
-	if [ -n "${PERSISTENT}" ]
+	if [ -n "${PERSISTENT}" ] && [ -z "${NOPERSISTENT}" ]
 	then
+		# Load USB modules
+		num_block=$(ls -l /sys/block | wc -l)
+		for module in sd_mod uhci-hcd ehci-hcd ohci-hcd usb-storage
+		do
+			modprobe -q -b ${module}
+		done
+
+		if [ -x /sbin/udevadm ]
+		then
+			# lenny
+			udevadm trigger
+			udevadm settle
+		else
+			# etch
+			udevtrigger
+			udevsettle
+		fi
+
+		# For some reason, udevsettle does not block in this scenario,
+		# so we sleep for a little while.
+		#
+		# See https://bugs.launchpad.net/ubuntu/+source/casper/+bug/84591
+		for timeout in 5 4 3 2 1
+		do
+			sleep 1
+
+			if [ $(ls -l /sys/block | wc -l) -gt ${num_block} ]
+			then
+				break
+			fi
+		done
+
 		cowprobe=$(find_cow_device "${root_persistence}")
 
 		if [ -b "${cowprobe}" ]
 		then
 			cowdevice=${cowprobe}
 			cow_fstype=$(get_fstype "${cowprobe}")
+			cow_mountopt="rw,noatime"
 		else
 			[ "${quiet}" != "y" ] && log_warning_msg "Unable to find the persistent medium"
 			cowdevice="tmpfs"
 			cow_fstype="tmpfs"
+			cow_mountopt="rw,noatime,mode=755"
 		fi
-	elif [ -n "${NFS_COW}" ]
+	elif [ -n "${NFS_COW}" ] && [ -z "${NOPERSISTENT}" ]
 	then
 		# check if there are any nfs options
 		if echo ${NFS_COW}|grep -q ','
@@ -1015,10 +1116,10 @@ setup_unionfs ()
 		[ "${quiet}" != "y" ] && log_begin_msg \
 			"Trying nfsmount ${nfs_cow_opts} ${cowdevice} /cow"
 		nfsmount ${nfs_cow_opts} ${cowdevice} /cow || \
-			panic "Can not mount ${cowdevice} on /cow"
+			panic "Can not mount ${cowdevice} (n: ${cow_fstype}) on /cow"
 	else
-		mount ${cowdevice} -t ${cow_fstype} -o rw,noatime /cow || \
-			panic "Can not mount ${cowdevice} on /cow"
+		mount -t ${cow_fstype} -o ${cow_mountopt} ${cowdevice} /cow || \
+			panic "Can not mount ${cowdevice} (o: ${cow_fstype}) on /cow"
 	fi
 
 	rofscount=$(echo ${rofslist} |wc -w)
@@ -1056,7 +1157,7 @@ setup_unionfs ()
 	mount -t tmpfs tmpfs ${rootmnt}/live
 
 	# Adding other custom mounts
-	if [ -n "${PERSISTENT}" ]
+	if [ -n "${PERSISTENT}" ] && [ -z "${NOPERSISTENT}" ]
 	then
 		# directly mount /home
 		# FIXME: add a custom mounts configurable system
@@ -1087,7 +1188,7 @@ setup_unionfs ()
 					;;
 
 				*)
-					mount --move "${d}" "${rootmnt}/live/${d##*/}"
+					mount -o move "${d}" "${rootmnt}/live/${d##*/}"
 					;;
 			esac
 		done
@@ -1095,7 +1196,7 @@ setup_unionfs ()
 
 	# shows cow fs on /cow for use by live-snapshot
 	mkdir -p "${rootmnt}/live/cow"
-	mount -o move /cow "${rootmnt}/live/cow"
+	mount -o move /cow "${rootmnt}/live/cow" || mount -o bind /cow "${rootmnt}/live/cow" || [ "${quiet}" != "y" ] && log_warning_msg "Unable to move or bind /cow to ${rootmnt}/live/cow"
 }
 
 check_dev ()
@@ -1107,6 +1208,19 @@ check_dev ()
 	if [ -z "${devname}" ]
 	then
 		devname=$(sys2dev "${sysdev}")
+	fi
+
+	if [ -d "${devname}" ]
+	then
+		mount -o bind "${devname}" $mountpoint || continue
+
+		if is_live_path $mountpoint
+		then
+			echo $mountpoint
+			return 0
+		else
+			umount $mountpoint
+		fi
 	fi
 
 	if [ -n "${LIVE_MEDIA_OFFSET}" ]
@@ -1162,7 +1276,7 @@ find_livefs ()
 	fi
 
 	# or do the scan of block devices
-	for sysblock in $(echo /sys/block/* | tr ' ' '\n' | grep -v loop | grep -v ram)
+	for sysblock in $(echo /sys/block/* | tr ' ' '\n' | grep -v loop | grep -v ram | grep -v 'dm-' | grep -v fd )
 	do
 		devname=$(sys2dev "${sysblock}")
 		fstype=$(get_fstype "${devname}")
@@ -1184,7 +1298,8 @@ find_livefs ()
 			done
 		elif [ "${fstype}" = "squashfs" -o \
 			"${fstype}" = "ext2" -o \
-			"${fstype}" = "ext3" ]
+			"${fstype}" = "ext3" -o \
+			"${fstype}" = "jffs2" ]
 		then
 			# This is an ugly hack situation, the block device has
 			# an image directly on it.  It's hopefully
@@ -1198,14 +1313,6 @@ find_livefs ()
 	return 1
 }
 
-pulsate ()
-{
-	if [ -x /sbin/usplash_write ]
-	then
-		/sbin/usplash_write "PULSATE"
-	fi
-}
-
 set_usplash_timeout ()
 {
 	if [ -x /sbin/usplash_write ]
@@ -1216,16 +1323,22 @@ set_usplash_timeout ()
 
 mountroot ()
 {
+    
+        if [ -x /scripts/local-top/cryptroot ]; then
+	    /scripts/local-top/cryptroot
+	fi
+
 	exec 6>&1
 	exec 7>&2
 	exec > live.log
 	exec 2>&1
+	tail -f live.log >&7 &
+	tailpid="${!}"
 
 	Arguments
 
 	set_usplash_timeout
 	[ "${quiet}" != "y" ] && log_begin_msg "Running /scripts/live-premount"
-	pulsate
 	run_scripts /scripts/live-premount
 	[ "${quiet}" != "y" ] && log_end_msg
 
@@ -1234,7 +1347,7 @@ mountroot ()
 
 	set_usplash_timeout
 
-	if [ ! -z "${NETBOOT}" ] || [ ! -z "${FETCH}" ]
+	if [ ! -z "${NETBOOT}" ] || [ ! -z "${FETCH}" ] || [ ! -z "${HTTPFS}" ] || [ ! -z "${FTPFS}" ]
 	then
 		if do_netmount
 		then
@@ -1243,18 +1356,24 @@ mountroot ()
 			panic "Unable to find a live file system on the network"
 		fi
 	else
-		# Scan local devices for the image
-		for i in 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
-		do
-			livefs_root=$(find_livefs ${i})
+		if [ -n "${PLAIN_ROOT}" ] && [ -n "${ROOT}" ]
+		then
+			# Do a local boot from hd
+			livefs_root=${ROOT}
+		else
+			# Scan local devices for the image
+			for i in 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+			do
+				livefs_root=$(find_livefs ${i})
 
-			if [ -n "${livefs_root}" ]
-			then
-				break
-			fi
+				if [ -n "${livefs_root}" ]
+				then
+					break
+				fi
 
-			sleep 1
-		done
+				sleep 1
+			done
+		fi
 	fi
 
 	if [ -z "${livefs_root}" ]
@@ -1291,11 +1410,11 @@ mountroot ()
 	maybe_break live-bottom
 	[ "${quiet}" != "y" ] && log_begin_msg "Running /scripts/live-bottom"
 
-	pulsate
 	run_scripts /scripts/live-bottom
 	[ "${quiet}" != "y" ] && log_end_msg
 
 	exec 1>&6 6>&-
 	exec 2>&7 7>&-
+	kill ${tailpid}
 	cp live.log "${rootmnt}/var/log/"
 }

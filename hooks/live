@@ -46,6 +46,15 @@ copy_exec /usr/share/live-initramfs/live-preseed /bin
 cp /usr/share/initramfs-tools/scripts/live-functions "${DESTDIR}"/scripts
 cp /usr/share/initramfs-tools/scripts/live-helpers "${DESTDIR}"/scripts
 
+# klibc dependencies
+for FILE in /lib/libacl* /lib/libblkid* /lib/libuuid* /lib/libdevmapper* /lib/libattr*
+do
+	if [ ! -e "${DESTDIR}"/"${FILE}" ]
+	then
+		cp -a "${FILE}" "${DESTDIR}"/"${FILE}"
+	fi
+done
+
 # Handling other stuff
 
 # Configuration: keymap (usefull when using encryption)
@@ -74,14 +83,17 @@ fi
 # Filesystem: ext3
 manual_add_modules ext3
 
+# Filesystem: jffs2
+manual_add_modules jffs2
+
 # Filesystem: squashfs
 copy_exec /sbin/losetup /sbin
 manual_add_modules loop
 manual_add_modules squashfs
 
-# Filesystem: unionfs/aufs
-manual_add_modules unionfs
+# Filesystem: aufs/unionfs
 manual_add_modules aufs
+manual_add_modules unionfs
 
 # Filesystem: vfat
 manual_add_modules nls_cp437
@@ -96,6 +108,9 @@ manual_add_modules ohci1394
 manual_add_modules sbp2
 manual_add_modules sr_mod
 
+# Hardware: usb
+manual_add_modules sd_mod
+
 # Hardware: network
 auto_add_modules net
 
@@ -109,12 +124,37 @@ fi
 copy_exec /usr/bin/md5sum /bin
 
 # Program: udev
-copy_exec /sbin/udevtrigger /sbin
-copy_exec /sbin/udevsettle /sbin
+if [ -x /sbin/udevadm ]
+then
+	# lenny
+	copy_exec /sbin/udevadm /sbin
+else
+	# etch
+	copy_exec /sbin/udevtrigger /sbin
+	copy_exec /sbin/udevsettle /sbin
+fi
 copy_exec /usr/bin/udevinfo /bin
 
 # Program: wget
 if [ -x /usr/bin/wget ]
 then
 	copy_exec /usr/bin/wget /bin
+fi
+
+# FUSE kernel module
+manual_add_modules fuse
+
+# FUSE filesystem: httpfs2
+if [ -x /usr/bin/httpfs2_ssl ]
+then
+	copy_exec /usr/bin/httpfs2_ssl /bin/httpfs
+elif [ -x /usr/bin/httpfs2 ]
+then
+	copy_exec /usr/bin/httpfs2 /bin/httpfs
+fi
+
+# FUSE filesystem: curlftpfs
+if [ -x /usr/bin/curlftpfs ]
+then
+	copy_exec /usr/bin/curlftpfs /bin
 fi

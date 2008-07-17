@@ -6,14 +6,15 @@
 
 @DPATCH@
 
---- a/hooks/live	2007-11-01 23:05:08.000000000 +0100
-+++ b/hooks/live	2007-11-25 21:39:28.000000000 +0100
-@@ -78,6 +78,8 @@
+--- a/hooks/live  2008-07-17 10:29:18.000000000 +0200
++++ b/hooks/live  2008-07-17 10:29:30.000000000 +0200
+@@ -90,6 +90,8 @@
  copy_exec /sbin/losetup /sbin
  manual_add_modules loop
  manual_add_modules squashfs
 +manual_add_modules sqlzma
 +manual_add_modules unlzma
- 
- # Filesystem: unionfs/aufs
- manual_add_modules unionfs
+
+ # Filesystem: aufs/unionfs
+ manual_add_modules aufs
+

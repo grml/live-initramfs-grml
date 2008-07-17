@@ -44,8 +44,6 @@ if [ -n "${grep_file}" ]
 then
 	# use rootfs configured locale
 	locale=$(grep -s 'LANG=' ${grep_file} | sed s/'LANG='// | tr -d '"' )
-else
-	grep_file=/root/etc/default/locale
 fi
 
 if [ -n "${LOCALE}" ]
@@ -95,14 +93,15 @@ EOF
 
 	if [ -z "${LANG}" ]
 	then
-		log_warning_message "Locale ${locale} is unsupported."
+		log_warning_msg "Locale ${locale} is unsupported."
 		locale="en_US.UTF-8"
 		LANG="${locale}"
 	fi
 
 	really_export LANG
 
-	printf 'LANG=%s\n' "${LANG}" > "${grep_file}"
+	printf 'LANG="%s"\n' "${LANG}" >> /root/etc/default/locale
+	printf 'LANG="%s"\n' "${LANG}" >> /root/etc/environment
 	printf '%s UTF-8\n' "${LANG}" > /root/etc/locale.gen
 	chroot /root /usr/sbin/locale-gen
 fi

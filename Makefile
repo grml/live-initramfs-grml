@@ -27,10 +27,10 @@ install: test build
 
 	# Installing executables
 	mkdir -p $(DESTDIR)/sbin
-	cp bin/live-getty bin/live-login bin/live-snapshot $(DESTDIR)/sbin
+	cp bin/live-getty bin/live-login bin/live-new-uuid bin/live-snapshot $(DESTDIR)/sbin
 
 	mkdir -p $(DESTDIR)/usr/share/live-initramfs
-	cp bin/live-preseed bin/live-reconfigure $(DESTDIR)/usr/share/live-initramfs
+	cp bin/live-preseed bin/live-reconfigure contrib/languagelist $(DESTDIR)/usr/share/live-initramfs
 
 	mkdir -p $(DESTDIR)/usr/share/initramfs-tools
 	cp -r hooks scripts $(DESTDIR)/usr/share/initramfs-tools
@@ -40,7 +40,7 @@ install: test build
 	cp -r COPYING docs/* $(DESTDIR)/usr/share/doc/live-initramfs
 
 	mkdir -p $(DESTDIR)/usr/share/doc/live-initramfs/examples
-	cp -r conf/live.conf $(DESTDIR)/usr/share/doc/live-initramfs/examples
+	cp -r conf/* $(DESTDIR)/usr/share/doc/live-initramfs/examples
 
 	# Installing manpages
 	set -e; for MANPAGE in manpages/*.en.1; \
@@ -116,9 +116,13 @@ update:
 		sed -i	-e 's/2007\\-11\\-19/2007\\-11\\-26/' \
 			-e 's/2007-11-19/2007-11-26/' \
 			-e 's/19.11.2007/26.11.2007/' \
-			-e 's/1.110.7/1.110.8/' \
+			-e 's/1.113.1/1.113.2/' \
 		$$FILE; \
 	done
+
+	# Update language list
+	wget -O "contrib/languagelist" \
+		"http://svn.debian.org/viewsvn/*checkout*/d-i/trunk/packages/localechooser/languagelist"
 
 clean:
 
