@@ -1,9 +1,13 @@
-live-initramfs (1.136.2-2~grml.01) unstable; urgency=low
+live-initramfs (1.136.3-2~grml.00) unstable; urgency=low
 
+  * Sync with Debian [1.136.3-1] once more (no new
+    changes except for my own patch which has been applied).
   * Adjust path of rsync (use /bin).
   * Drop duplicate NOFSTAB from /etc/live.conf.
+  * Get rid of all scripts in scripts/live-bottom/ except
+    for 05mountpoints which is necessary to get a working setup.
 
- -- Michael Prokop <mika@grml.org>  Sun, 20 Jul 2008 16:54:49 +0200
+ -- Michael Prokop <mika@grml.org>  Sun, 20 Jul 2008 19:18:27 +0200
 
 live-initramfs (1.136.2-2~grml.00) unstable; urgency=low
 
