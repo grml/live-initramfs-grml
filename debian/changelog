@@ -1,3 +1,9 @@
+live-initramfs (1.136.2-2~grml.01) unstable; urgency=low
+
+  * Adjust path of rsync (use /bin).
+
+ -- Michael Prokop <mika@grml.org>  Sun, 20 Jul 2008 16:33:59 +0200
+
 live-initramfs (1.136.2-2~grml.00) unstable; urgency=low
 
   * Rebase against current version of live-initramfs in Debian.

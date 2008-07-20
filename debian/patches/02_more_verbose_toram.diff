@@ -33,14 +33,14 @@
 -			cp ${MODULETORAMFILE} ${copyto} # copy only the filesystem module
 -		else
 -			cp -a ${copyfrom}/* ${copyto}   # "cp -a" from busybox also copies hidden files
-+			if [ -x /usr/bin/rsync ] ; then
++			if [ -x /bin/rsync ] ; then
 +			echo " * Copying $MODULETORAMFILE to RAM" 1>/dev/console
 +			   rsync -a --progress ${MODULETORAMFILE} ${copyto} 1>/dev/console # copy only the filesystem module
 +			else
 +			   cp ${MODULETORAMFILE} ${copyto} # copy only the filesystem module
 +			fi
 +        	else
-+			if [ -x /usr/bin/rsync ] ; then
++			if [ -x /bin/rsync ] ; then
 +			echo " * Copying medium to RAM" 1>/dev/console
 +			   rsync -a --progress ${copyfrom}/* ${copyto} 1>/dev/console  # "cp -a" from busybox also copies hidden files
 +			else
