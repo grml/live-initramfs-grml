@@ -2,3 +2,4 @@
 02_more_verbose_toram.diff
 04_fix_cow_tmpfs_mount.dpatch
 05_get_rid_of_wrong_debug_message.dpatch
+06_get_rid_of_utillinux-mountbinary.dpatch

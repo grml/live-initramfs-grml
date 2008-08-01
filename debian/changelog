@@ -1,3 +1,13 @@
+live-initramfs (1.136.3-2~grml.01) unstable; urgency=low
+
+  * Disable use of util-linux's mount binary through
+    06_get_rid_of_utillinux-mountbinary.dpatch which
+    gets rid of /sbin/mount.cifs. See
+    http://news.gmane.org/gmane.linux.utilities.util-linux-ng/cutoff=1568
+    for more details about the problem.
+
+ -- Michael Prokop <mika@grml.org>  Fri, 01 Aug 2008 16:09:58 +0200
+
 live-initramfs (1.136.3-2~grml.00) unstable; urgency=low
 
   * Sync with Debian [1.136.3-1] once more (no new
