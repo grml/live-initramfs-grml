@@ -6,13 +6,12 @@
 
 @DPATCH@
 
---- a/scripts/live	2008-08-16 10:42:18.000000000 +0200
-+++ b/scripts/live	2008-08-16 10:47:10.000000000 +0200
-@@ -632,11 +632,21 @@
- 		cd "${OLDPWD}"
+--- a/scripts/live	Sat Aug 16 11:01:24 2008 +0200
++++ b/scripts/live	Sat Aug 16 11:02:47 2008 +0200
+@@ -633,10 +633,21 @@
  	else
  		if [ -n "${MODULETORAMFILE}" ]
--		then
+ 		then
 -			cp ${MODULETORAMFILE} ${copyto} # copy only the filesystem module
 -		else
 -			cp -a ${copyfrom}/* ${copyto}   # "cp -a" from busybox also copies hidden files
@@ -23,7 +22,7 @@
 +                   else
 +                      cp ${MODULETORAMFILE} ${copyto} # copy only the filesystem module
 +                   fi
-+                els
++                else
 +                   if [ -x /bin/rsync ] ; then
 +                   echo " * Copying medium to RAM" 1>/dev/console
 +                      rsync -a --progress ${copyfrom}/* ${copyto} 1>/dev/console  # "cp -a" from busybox also copies hidden files
