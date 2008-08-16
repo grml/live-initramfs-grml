@@ -1,8 +1,10 @@
 live-initramfs (1.136.3-2~grml.03) unstable; urgency=low
 
   * Improve boot failure splash.
+  * Readd scripts/live-bottom/05mountpoints, otherwise
+    we suffer from "run-init: nuking initramfs contents".
 
- -- Michael Prokop <mika@grml.org>  Sat, 16 Aug 2008 12:31:22 +0200
+ -- Michael Prokop <mika@grml.org>  Sat, 16 Aug 2008 15:19:05 +0200
 
 live-initramfs (1.136.3-2~grml.02) unstable; urgency=low
 
