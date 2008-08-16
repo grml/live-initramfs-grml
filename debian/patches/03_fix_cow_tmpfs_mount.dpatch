@@ -1,5 +1,5 @@
 #! /bin/sh /usr/share/dpatch/dpatch-run
-## 04_fix_cow_tmpfs_mount.dpatch by  <mika@grml.org>
+## 03_fix_cow_tmpfs_mount.dpatch by  <mika@grml.org>
 ##
 ## All lines beginning with `## DP:' are a description of the patch.
 ## DP: Fix cow tmpfs mount option handling

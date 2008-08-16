@@ -1,5 +1,5 @@
 #! /bin/sh /usr/share/dpatch/dpatch-run
-## 06_get_rid_of_utillinux-mountbinary.dpatch.dpatch by  <mika@grml.org>
+## 04_get_rid_of_utillinux-mountbinary.dpatch by  <mika@grml.org>
 ##
 ## All lines beginning with `## DP:' are a description of the patch.
 ## DP: Get rid of util-linux mount binary

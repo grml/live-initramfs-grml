@@ -1,5 +1,5 @@
 #! /bin/sh /usr/share/dpatch/dpatch-run
-## 06_grml_version_file.dpatch.dpatch by  <mika@grml.org>
+## 05_boot_failure_message_grml.dpatch by  <mika@grml.org>
 ##
 ## All lines beginning with `## DP:' are a description of the patch.
 ## DP: Copy /etc/grml_version to initrd
