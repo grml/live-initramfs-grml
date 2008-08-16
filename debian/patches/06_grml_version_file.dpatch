@@ -1,0 +1,23 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 06_grml_version_file.dpatch.dpatch by  <mika@grml.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Copy /etc/grml_version to initrd
+
+@DPATCH@
+
+diff -r 9d601dc7dc9f hooks/live
+--- a/hooks/live	Sat Aug 16 11:03:31 2008 +0200
++++ b/hooks/live	Sat Aug 16 11:06:36 2008 +0200
+@@ -33,6 +33,11 @@
+ 
+ 	mkdir -p "${DESTDIR}"/etc
+ 	cp /etc/live.conf "${DESTDIR}"/etc
++fi
++
++if [ -r /etc/grml_version ]
++then
++	cp /etc/grml_version "${DESTDIR}"/etc
+ fi
+ 
+ # Directories

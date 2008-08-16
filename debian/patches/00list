@@ -3,3 +3,4 @@
 03_fix_cow_tmpfs_mount.dpatch
 04_get_rid_of_utillinux-mountbinary.dpatch
 05_boot_failure_message_grml.dpatch
+06_grml_version_file.dpatch
