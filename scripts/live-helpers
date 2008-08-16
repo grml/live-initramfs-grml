@@ -1,3 +1,4 @@
+#!/bin/sh
 # live-initramfs helper functions, used by live-initramfs on boot and by live-snapshot
 
 if [ ! -x "/bin/fstype" ]
@@ -30,37 +31,14 @@ subdevices ()
 
 is_supported_fs ()
 {
+	# FIXME: do something better like the scan of supported filesystems
 	fstype="${1}"
 
-	# Validate input first
-	if [ -z "${fstype}" ]
-	then
-		return 1
-	fi
-
-	# Try to look if it is already supported by the kernel
-	if grep -q ${fstype} /proc/filesystems
-	then
+	case ${fstype} in
+		vfat|iso9660|udf|ext2|ext3|ntfs|jffs2)
 		return 0
-	else
-		# Then try to add support for it the gentle way using the initramfs capabilities
-		modprobe ${fstype}
-		if grep -q ${fstype} /proc/filesystems
-		then
-			return 0
-		# Then try the hard way if /root is already reachable
-		else
-			kmodule="/root/lib/modules/`uname -r`/${fstype}/${fstype}.ko"
-			if [ -e "${kmodule}" ]
-			then
-				insmod "${kmodule}"
-				if grep -q ${fstype} /proc/filesystems
-				then
-					return 0
-				fi
-			fi
-		fi
-	fi
+		;;
+	esac
 
 	return 1
 }
@@ -189,15 +167,7 @@ setup_loop ()
 	local readonly=${6}
 
 	modprobe -q -b "${module}"
-
-	if [ -x /sbin/udevadm ]
-	then
-		# lenny
-		udevadm settle
-	else
-		# etch
-		udevsettle
-	fi
+	udevsettle
 
 	for loopdev in ${pattern}
 	do
@@ -208,7 +178,7 @@ setup_loop ()
 
 			if [ -n ${readonly} ]
 			then
-				if losetup --help 2>&1 | grep -q -- "-r\b"
+				if /sbin/losetup --help 2>&1 | grep -q -- "-r\b"
 				then
 					options="${options} -r"
 				fi
