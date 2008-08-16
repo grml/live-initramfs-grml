@@ -1,3 +1,10 @@
+live-initramfs (1.136.3-2~grml.04) unstable; urgency=low
+
+  * Now that we have a working booting toolchaing again
+    activate all grml specific patches again.
+
+ -- Michael Prokop <mika@grml.org>  Sat, 16 Aug 2008 21:41:36 +0200
+
 live-initramfs (1.136.3-2~grml.03) unstable; urgency=low
 
   The "OMG, I hate the booting toolchain" release.
