@@ -1,0 +1,31 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 07_boot_failure_message_grml.diff.dpatch by  <mika@grml.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Adjust message if booting fails
+
+@DPATCH@
+
+--- a/scripts/live-functions	2008-08-16 01:53:16.000000000 +0200
++++ b/scripts/live-functions	2008-08-16 10:35:25.000000000 +0200
+@@ -119,13 +119,17 @@
+ 	printf "     ${DEB_1}\n"
+ 	printf "     ${DEB_2}  \033[1;37mBOOT FAILED!\033[0m\n"
+ 	printf "     ${DEB_3}\n"
+-	printf "     ${DEB_4}  This Debian Live image failed to boot.\n\n"
++	printf "     ${DEB_4}  This grml image failed to boot.\n\n"
+ 
+-	printf "  Please file a bug against the 'live-initramfs' package or email the Debian\n"
+-	printf "  Live mailing list at <debian-live-devel@lists.alioth.debian.org>, making\n"
++	printf "  Please file a bug at http://grml.org/bugs/ or http://bts.grml.org/, making\n"
+ 	printf "  sure to note the exact version, name and distribution of the image you were\n"
+ 	printf "  attempting to boot.\n\n"
+ 
++        if [ -r /etc/grml_version ] ; then
++           cat /etc/grml_version
++           printf "\n"
++        fi
++
+ 	printf "  The file ${LIVELOG} contains some debugging information but booting with the\n"
+ 	printf "  ${DEBUG} command-line parameter will greatly increase its verbosity which is\n"
+ 	printf "  extremely useful when diagnosing issues.\n\n"

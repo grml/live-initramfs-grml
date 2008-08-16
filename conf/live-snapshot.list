@@ -15,4 +15,4 @@
 /etc/hosts
 
 # Include the whole Desktop directory of the default user
-#/home/user/Desktop
+/home/user/Desktop

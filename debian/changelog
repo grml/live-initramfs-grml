@@ -1,3 +1,12 @@
+live-initramfs (1.136.3-2~grml.02) unstable; urgency=low
+
+  * Resync with Debian's current Git version [20080816,
+    git commit 0c14aa2e625bc1bb43947f2c0d04b876900cd51e].
+    Get rid of debian/patches/05_get_rid_of_wrong_debug_message.dpatch
+    and resync other patches as well.
+
+ -- Michael Prokop <mika@grml.org>  Sat, 16 Aug 2008 10:25:54 +0200
+
 live-initramfs (1.136.3-2~grml.01) unstable; urgency=low
 
   * Disable use of util-linux's mount binary through
