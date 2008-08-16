@@ -1,11 +1,16 @@
 live-initramfs (1.136.3-2~grml.03) unstable; urgency=low
 
+  The "OMG, I hate the booting toolchain" release.
+
   * Improve boot failure splash.
+  * Don't remove scripts/live-bottom in grml package but
+    remove it in build sequence, this provides better
+    synching with Debian.
   * Readd scripts/live-bottom/05mountpoints, otherwise
     we suffer from "run-init: nuking initramfs contents".
   * Update debian/control.
 
- -- Michael Prokop <mika@grml.org>  Sat, 16 Aug 2008 15:19:05 +0200
+ -- Michael Prokop <mika@grml.org>  Sat, 16 Aug 2008 20:38:36 +0200
 
 live-initramfs (1.136.3-2~grml.02) unstable; urgency=low
 

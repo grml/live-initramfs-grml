@@ -44,9 +44,16 @@ install: build
 
 	# Installing package
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/live-initramfs
-	# Install grml specific configuration
+
+	# Install grml specific configuration:
 	install -m 644 grml/live.conf ./debian/live-initramfs/etc/live.conf
+	# Get rid of unnecessary stuff:
 	rm -rf ./debian/live-initramfs/usr/share/initramfs-tools/scripts/live-bottom/
+	# ... and install important stuff again:
+
+	mkdir ./debian/live-initramfs/usr/share/initramfs-tools/scripts/live-bottom/
+	install -m 755 grml/05mountpoints \
+	  ./debian/live-initramfs/usr/share/initramfs-tools/scripts/live-bottom/05mountpoints
 
 	# Removing double files
 	rm -f debian/live-initramfs/usr/share/doc/live-initramfs/COPYING
