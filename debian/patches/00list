@@ -1,5 +1,4 @@
 01_add_rsync.dpatch
 02_more_verbose_toram.diff
-03_fix_cow_tmpfs_mount.dpatch
 04_get_rid_of_utillinux-mountbinary.dpatch
 05_boot_failure_message_grml.dpatch
