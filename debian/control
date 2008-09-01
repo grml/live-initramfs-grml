@@ -3,7 +3,7 @@ Section: misc
 Priority: optional
 Maintainer: Michael Prokop <mika@grml.org>
 Build-Depends: debhelper (>= 5)
-Build-Depends-Indep: asciidoc, docbook-xsl, xsltproc
+Build-Depends-Indep: asciidoc, docbook-xsl, xsltproc, dpatch
 Standards-Version: 3.8.0
 Homepage: http://debian-live.alioth.debian.org/
 Vcs-Browser: http://git.debian.net/?p=live-initramfs.git
