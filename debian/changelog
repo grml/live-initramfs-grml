@@ -1,4 +1,4 @@
-live-initramfs (1.139.1-2~grml.01) unstable; urgency=low
+live-initramfs (1.139.1-1grml.01) unstable; urgency=low
 
   * Resync with Debian's 1.139.1-1 version.
     [Closes: issue497]
@@ -7,7 +7,7 @@ live-initramfs (1.139.1-2~grml.01) unstable; urgency=low
   * Integrate debian/patches/03_grml_version_file_hook.dpatch.
   * Readd dpatch to build depends.
 
- -- Michael Prokop <mika@grml.org>  Mon, 01 Sep 2008 12:30:59 +0200
+ -- Michael Prokop <mika@grml.org>  Mon, 01 Sep 2008 12:34:04 +0200
 
 live-initramfs (1.136.3-2~grml.04) unstable; urgency=low
 
