@@ -1,8 +1,11 @@
 live-initramfs (1.139.1-2grml.01) unstable; urgency=low
 
   * Resync with Debian's 1.139.1-2 version.
+  * Add debian/patches/04_ignore_errors_from_fstype.dpatch
+    to ignore errors from fstype, otherwise we have
+    "stdin: error 0" during bootup.
 
- -- Michael Prokop <mika@grml.org>  Mon, 15 Sep 2008 17:28:20 +0200
+ -- Michael Prokop <mika@grml.org>  Mon, 15 Sep 2008 17:43:13 +0200
 
 live-initramfs (1.139.1-1grml.01) unstable; urgency=low
 
