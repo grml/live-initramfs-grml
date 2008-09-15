@@ -1,3 +1,9 @@
+live-initramfs (1.139.1-2grml.01) unstable; urgency=low
+
+  * Resync with Debian's 1.139.1-2 version.
+
+ -- Michael Prokop <mika@grml.org>  Mon, 15 Sep 2008 17:28:20 +0200
+
 live-initramfs (1.139.1-1grml.01) unstable; urgency=low
 
   * Resync with Debian's 1.139.1-1 version.

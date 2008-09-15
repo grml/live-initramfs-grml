@@ -285,9 +285,9 @@ Arguments ()
 				export NOSUDO
 				;;
 
-			noswap)
-				NOSWAP="Yes"
-				export NOSWAP
+			swapon)
+				SWAPON="Yes"
+				export SWAPON
 				;;
 
 			noupdatenotifier)
@@ -538,7 +538,7 @@ mount_images_in_directory ()
 {
 	directory="${1}"
 	rootmnt="${2}"
-    	mac="${3}"
+	mac="${3}"
 
 
 	if match_files_in_dir "${directory}/${LIVE_MEDIA_PATH}/*.squashfs" ||
@@ -1040,6 +1040,12 @@ setup_unionfs ()
 				panic "Unknown file system type on ${backdev} (${image})"
 			fi
 
+			if [ -z "${fstype}" ]
+			then
+				fstype="${imagename##*.}"
+				log_warning_msg "Unknown file system type on ${backdev} (${image}), assuming ${fstype}."
+			fi
+
 			mkdir -p "${croot}/${imagename}"
 			log_begin_msg "Mounting \"${image}\" on \"${croot}${imagename}\" via \"${backdev}\""
 			mount -n -t "${fstype}" -o ro,noatime "${backdev}" "${croot}/${imagename}" || panic "Can not mount ${backdev} (${image}) on ${croot}/${imagename}" && rofsstring="${croot}/${imagename}=${roopt}:${rofsstring}" && rofslist="${croot}/${imagename} ${rofslist}"
@@ -1332,12 +1338,13 @@ set_usplash_timeout ()
 	if [ -x /sbin/usplash_write ]
 	then
 		/sbin/usplash_write "TIMEOUT 120"
-	fi
+	else if [ -x /sbin/splashy_update ] ; then
+		/sbin/splashy_update "TIMEOUT 120"
+	fi ; fi
 }
 
 mountroot ()
 {
-    
         if [ -x /scripts/local-top/cryptroot ]; then
 	    /scripts/local-top/cryptroot
 	fi
@@ -1350,7 +1357,7 @@ mountroot ()
 	tailpid="${!}"
 
 	# Ensure 'panic' function is overridden
-    	. /scripts/live-functions
+	. /scripts/live-functions
 
 	Arguments
 
