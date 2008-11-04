@@ -1,5 +1,4 @@
 01_add_rsync.dpatch
 02_more_verbose_toram.dpatch
 03_grml_version_file_hook.dpatch
-04_ignore_errors_from_fstype.dpatch
 05_boot_failure_message_grml.dpatch
