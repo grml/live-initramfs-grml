@@ -4,8 +4,9 @@ live-initramfs (1.139.1-4grml.01) unstable; urgency=low
 
   [ Michael Prokop ]
   * Ignore errors from fstype.
+  * Display "Mounted live system on ..." during bootup.
 
- -- Michael Prokop <mika@grml.org>  Sat, 15 Nov 2008 00:13:50 +0100
+ -- Michael Prokop <mika@grml.org>  Sat, 15 Nov 2008 00:54:10 +0100
 
 live-initramfs (1.139.1-2grml.01) unstable; urgency=low
 

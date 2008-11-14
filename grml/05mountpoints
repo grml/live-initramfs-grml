@@ -33,4 +33,9 @@ then
 	mount -n --move /live/image /root/live/image
 fi
 
+MOUNTED_ON=$(grep /live/image /proc/mounts 2>/dev/null | cut -f 1 -d " ")
+if [ -n "$MOUNTED_ON" ] ; then
+   echo "-> Mounted live system on $MOUNTED_ON">/dev/console
+fi
+
 log_end_msg
