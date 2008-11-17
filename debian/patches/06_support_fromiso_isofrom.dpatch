@@ -1,0 +1,40 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 06_support_fromiso_isofrom.dpatch <mika@grml.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Support isofrom / fromiso bootoption
+
+@DPATCH@
+
+--- a/scripts/live
++++ b/scripts/live
+@@ -92,6 +92,11 @@ Arguments ()
+ 				export HOSTNAME LIVECONF
+ 				;;
+ 
++			isofrom=*|fromiso=*)
++				FROMISO="${ARGUMENT#*=}"
++				export FROMISO
++				;;
++
+ 			username=*)
+ 				USERNAME="${ARGUMENT#username=}"
+ 				LIVECONF="changed"
+@@ -1300,6 +1305,17 @@ check_dev ()
+ 	devname="${2}"
+ 	skip_uuid_check="${3}"
+ 
++	# support for fromiso=.../isofrom=....
++	if [ -n "$FROMISO" ]
++	then
++		mkdir /isofrom
++		ISO_DEVICE="$(echo $FROMISO | sed 's|\(/dev/[a-z]*[0-9]*\).*|\1|')"
++		mount "$ISO_DEVICE" /isofrom
++		ISO_NAME="$(echo $FROMISO | sed 's|/dev/[a-z]*[0-9]*/||')"
++		loopdevname=$(setup_loop "/isofrom/${ISO_NAME}" "loop" "/sys/block/loop*" "" '')
++		devname="${loopdevname}"
++	fi
++
+ 	if [ -z "${devname}" ]
+ 	then
+ 		devname=$(sys2dev "${sysdev}")
