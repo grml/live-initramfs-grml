@@ -1,14 +1,23 @@
 #! /bin/sh /usr/share/dpatch/dpatch-run
-## 02_more_verbose_toram.dpatch by  <mika@grml.org>
+## 02_more_verbose_toram.dpatch by <mika@grml.org>
 ##
 ## All lines beginning with `## DP:' are a description of the patch.
 ## DP: Support more verbose version of toram via rsync
 
 @DPATCH@
 
---- a/scripts/live	Sat Aug 16 11:01:24 2008 +0200
-+++ b/scripts/live	Sat Aug 16 11:02:47 2008 +0200
-@@ -633,10 +633,21 @@
+--- a/scripts/live
++++ b/scripts/live
+@@ -640,7 +640,7 @@ copy_live_to ()
+ 
+ 	# begin copying (or uncompressing)
+ 	mkdir "${copyto}"
+-	echo "mount -t ${fstype} ${mount_options} ${dev} ${copyto}"
++	log_begin_msg "mount -t ${fstype} ${mount_options} ${dev} ${copyto}"
+ 	mount -t "${fstype}" ${mount_options} "${dev}" "${copyto}"
+ 
+ 	if [ "${extension}" = "tgz" ]
+@@ -653,10 +653,22 @@ copy_live_to ()
  	else
  		if [ -n "${MODULETORAMFILE}" ]
  		then
@@ -24,13 +33,14 @@
 +                   fi
 +                else
 +                   if [ -x /bin/rsync ] ; then
-+                   echo " * Copying medium to RAM" 1>/dev/console
++                   echo " * Copying whole medium to RAM" 1>/dev/console
++                   echo "   -> Tip: boot using 'grml2ram' or use 'grml toram=...'" 1>/dev/console
++                   echo "      to copy the image only instead of the whole medium" 1>/dev/console
 +                      rsync -a --progress ${copyfrom}/* ${copyto} 1>/dev/console  # "cp -a" from busybox also copies hidden files
 +                   else
 +                      cp -a ${copyfrom}/* ${copyto}   # "cp -a" from busybox also copies hidden files
 +                   fi
 +                fi
-+		
  
  		livefs_root
  		umount ${copyfrom}
