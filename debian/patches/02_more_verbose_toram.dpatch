@@ -33,10 +33,10 @@
 +                   fi
 +                else
 +                   if [ -x /bin/rsync ] ; then
-+                   echo " * Copying whole medium to RAM" 1>/dev/console
-+                   echo "   -> Tip: boot using 'grml2ram' or use 'grml toram=...'" 1>/dev/console
-+                   echo "      to copy the image only instead of the whole medium" 1>/dev/console
++                      echo " * Copying whole medium to RAM" 1>/dev/console
 +                      rsync -a --progress ${copyfrom}/* ${copyto} 1>/dev/console  # "cp -a" from busybox also copies hidden files
++                      echo "   -> Tip: boot using 'grml2ram' or use 'grml toram=...'" 1>/dev/console
++                      echo "           to copy the image only instead of the whole medium" 1>/dev/console
 +                   else
 +                      cp -a ${copyfrom}/* ${copyto}   # "cp -a" from busybox also copies hidden files
 +                   fi
