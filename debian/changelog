@@ -13,8 +13,10 @@ live-initramfs (1.139.1-4grml.03) unstable; urgency=low
   * Install script
     /usr/share/initramfs-tools/scripts/live-bottom/08persistence_excludes
     we now start using persitency features.
+  * Rework debian/patches/04_fix_no_medium_found_error.dpatch:
+    No longer use fstype at all, but use vol_id by default.
 
- -- Michael Prokop <mika@grml.org>  Mon, 24 Nov 2008 10:21:07 +0100
+ -- Michael Prokop <mika@grml.org>  Mon, 24 Nov 2008 11:49:17 +0100
 
 live-initramfs (1.139.1-4grml.02) unstable; urgency=low
 
