@@ -54,6 +54,8 @@ install: build
 	mkdir ./debian/live-initramfs/usr/share/initramfs-tools/scripts/live-bottom/
 	install -m 755 grml/05mountpoints \
 	  ./debian/live-initramfs/usr/share/initramfs-tools/scripts/live-bottom/05mountpoints
+	install -m 755 grml/08persistence_excludes \
+	  ./debian/live-initramfs/usr/share/initramfs-tools/scripts/live-bottom/08persistence_excludes
 
 	# Removing double files
 	rm -f debian/live-initramfs/usr/share/doc/live-initramfs/COPYING

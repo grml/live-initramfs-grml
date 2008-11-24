@@ -10,8 +10,11 @@ live-initramfs (1.139.1-4grml.03) unstable; urgency=low
     - Adding a panic message when we netboot and have no supported
       network device (Closes: #496684).
     - Add a warning message when no image can be found.
+  * Install script
+    /usr/share/initramfs-tools/scripts/live-bottom/08persistence_excludes
+    we now start using persitency features.
 
- -- Michael Prokop <mika@grml.org>  Mon, 24 Nov 2008 10:17:30 +0100
+ -- Michael Prokop <mika@grml.org>  Mon, 24 Nov 2008 10:21:07 +0100
 
 live-initramfs (1.139.1-4grml.02) unstable; urgency=low
 
