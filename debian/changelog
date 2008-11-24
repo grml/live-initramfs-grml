@@ -1,3 +1,18 @@
+live-initramfs (1.139.1-4grml.03) unstable; urgency=low
+
+  * Sync with Debian's git repository
+    (hash: e4fba2e51e6dde560cf141e6f0c13763fadb47ae).
+    - Removing spurious 'livefs_root' in copy_live_to();.
+    - Also using splashy in shutdown message of the initscript.
+    - Also adding ralink to network device check.
+    - Turning 'no supported filesystem images found' into a panic
+      message, rather than a warning.
+    - Adding a panic message when we netboot and have no supported
+      network device (Closes: #496684).
+    - Add a warning message when no image can be found.
+
+ -- Michael Prokop <mika@grml.org>  Mon, 24 Nov 2008 10:17:30 +0100
+
 live-initramfs (1.139.1-4grml.02) unstable; urgency=low
 
   * Do not use NOPERSISTENT='Yes' so we can use persistency features
