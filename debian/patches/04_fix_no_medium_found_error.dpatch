@@ -8,15 +8,28 @@
 
 --- a/scripts/live-helpers
 +++ b/scripts/live-helpers
-@@ -77,9 +77,9 @@ get_fstype ()
- 	    return
- 	fi
+@@ -67,24 +67,6 @@ is_supported_fs ()
  
+ get_fstype ()
+ {
+-	local FSTYPE
+-	local FSSIZE
+-
+-	# fstype misreports LUKS devices
+-	if is_luks "${1}"
+-	then
+-	    /lib/udev/vol_id -t ${1} 2>/dev/null
+-	    return
+-	fi
+-
 -	eval $(fstype < ${1} 2>/dev/null)
-+	eval $(fstype ${1} 2>/dev/null)
- 
+-
 -	if [ "${FSTYPE}" != "unknown" ]
-+	if [ "${FSTYPE}" != "unknown" -a -n "${FSTYPE}" ]
- 	then
- 		echo ${FSTYPE}
- 		return 0
+-	then
+-		echo ${FSTYPE}
+-		return 0
+-	fi
+-
+ 	/lib/udev/vol_id -t ${1} 2>/dev/null
+ }
+ 
