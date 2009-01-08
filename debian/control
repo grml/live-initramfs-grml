@@ -6,8 +6,8 @@ Build-Depends: debhelper (>= 5), dpatch
 Build-Depends-Indep: asciidoc, docbook-xsl, xsltproc
 Standards-Version: 3.8.0
 Homepage: http://debian-live.alioth.debian.org/
-Vcs-Browser: http://git.debian.net/?p=live-initramfs.git
-Vcs-Git: git://git.debian.net/git/live-initramfs.git
+Vcs-Browser: http://git.grml.org/?p=live-initramfs-grml.git
+Vcs-Git: git://git.grml.org/live-initramfs-grml.git
 XS-Upstream-Depends: git-core
 
 Package: live-initramfs
@@ -29,3 +29,7 @@ Description: Debian Live initramfs hook
  although it will do no harm.
  .
  live-initramfs is a fork of casper <http://packages.ubuntu.com/casper/>.
+ .
+ Please notice that this package is maintained by the grml.org team.
+ This is NOT a fork of Debian's live-initramfs, it's just a customized
+ version to better fit grml's needs.
