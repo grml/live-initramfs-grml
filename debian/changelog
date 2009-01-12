@@ -1,3 +1,10 @@
+live-initramfs (1.154.4-1grml.02) unstable; urgency=low
+
+  * Apply patch by Michael Schierl <schierlm@gmx.de> for bootoption
+    findiso (usage: like findiso=/grml_2008.11.iso). Thanks!
+
+ -- Michael Prokop <mika@grml.org>  Mon, 12 Jan 2009 15:44:33 +0100
+
 live-initramfs (1.154.4-1grml.01) unstable; urgency=low
 
   * Disable several configuration options in /etc/live.conf as we don't
