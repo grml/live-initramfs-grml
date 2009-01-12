@@ -44,8 +44,8 @@ diff -urNad live-initramfs-grml~/scripts/live live-initramfs-grml/scripts/live
  		if is_live_path ${mountpoint} && \
  			([ "${skip_uuid_check}" ] || matches_uuid ${mountpoint})
 diff -urNad live-initramfs-grml~/scripts/live-bottom/05mountpoints live-initramfs-grml/scripts/live-bottom/05mountpoints
---- live-initramfs-grml~/scripts/live-bottom/05mountpoints	2008-11-04 01:20:22.000000000 +0100
-+++ live-initramfs-grml/scripts/live-bottom/05mountpoints	2009-01-12 15:42:20.323387590 +0100
+--- live-initramfs-grml~/grml/05mountpoints	2008-11-04 01:20:22.000000000 +0100
++++ live-initramfs-grml/grml/05mountpoints	2009-01-12 15:42:20.323387590 +0100
 @@ -33,4 +33,11 @@
  	mount --move /live/image /root/live/image
  fi
