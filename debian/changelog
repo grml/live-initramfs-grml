@@ -1,3 +1,25 @@
+live-initramfs (1.154.8-1grml.01) unstable; urgency=low
+
+  * Disable 04_fix_no_medium_found_error.dpatch (fixed upstream).
+  * Sync with Debian 1.154.8-1 (mentioning just the relevant changes):
+    [ Daniel Baumann ]
+    * Adding note about URL limitations in live-initramfs manpage when
+      using fetch parameter.
+    * Replacing casper with live in live-new-uuid.
+    * Added missing variable quoting that lead to broken root persistence, thanks
+      to Thierry Walrant <debian.tgc@walrant.net> (Closes: #512656).
+    * Adding patch from Thierry Walrant <debian.tgc@walrant.net> to allow setting
+      a path for the persistence files through persistent-path boot parameter
+      (Closes: #512661).
+    * Adding persistent-path to parameter list and manpage.
+    * Actually building/cleaning manpages through targets in Makefile.
+    * Also checking for wicd in 23networking, thanks to Ben Armstrong
+      <synrg@debian.org>.
+    * Don't redirect output of fstype detection to standard out, thanks to Ronny
+      Standtke <Ronny.Standtke@gmx.net>.
+
+ -- Michael Prokop <mika@grml.org>  Thu, 05 Feb 2009 10:34:14 +0100
+
 live-initramfs (1.154.4-1grml.02) unstable; urgency=low
 
   * Apply patch by Michael Schierl <schierlm@gmx.de> for bootoption
@@ -122,7 +144,7 @@ live-initramfs (1.136.3-2~grml.02) unstable; urgency=low
     git commit 0c14aa2e625bc1bb43947f2c0d04b876900cd51e].
   * Get rid of debian/patches/05_get_rid_of_wrong_debug_message.dpatch
     and resync other patches as well.
-  * Copy /etc/grml_version to initrd. 
+  * Copy /etc/grml_version to initrd.
 
  -- Michael Prokop <mika@grml.org>  Sat, 16 Aug 2008 10:25:54 +0200
 
