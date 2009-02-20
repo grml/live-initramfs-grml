@@ -4,3 +4,4 @@
 05_boot_failure_message_grml.dpatch
 06_support_fromiso_isofrom.dpatch
 07_support_findiso.dpatch
+08_readonly_devices.dpatch
