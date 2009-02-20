@@ -1,7 +1,7 @@
-live-initramfs (1.154.8-1grml.01) unstable; urgency=low
+live-initramfs (1.156.1-1grml.01) unstable; urgency=low
 
   * Disable 04_fix_no_medium_found_error.dpatch (fixed upstream).
-  * Sync with Debian 1.154.8-1 (mentioning just the relevant changes):
+  * Sync with Debian 1.156.1-1 (mentioning just the relevant changes):
     [ Daniel Baumann ]
     * Adding note about URL limitations in live-initramfs manpage when
       using fetch parameter.
@@ -17,8 +17,11 @@ live-initramfs (1.154.8-1grml.01) unstable; urgency=low
       <synrg@debian.org>.
     * Don't redirect output of fstype detection to standard out, thanks to Ronny
       Standtke <Ronny.Standtke@gmx.net>.
+    * Adding ext4 support.
+    * Merging casper 1.156.
+    * Updating parameters.txt.
 
- -- Michael Prokop <mika@grml.org>  Thu, 05 Feb 2009 10:34:14 +0100
+ -- Michael Prokop <mika@grml.org>  Fri, 20 Feb 2009 17:13:56 +0100
 
 live-initramfs (1.154.4-1grml.02) unstable; urgency=low
 
