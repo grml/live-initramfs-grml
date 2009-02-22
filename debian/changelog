@@ -1,23 +1,23 @@
 live-initramfs (1.156.1-1grml.01) unstable; urgency=low
 
-  * Disable 04_fix_no_medium_found_error.dpatch (fixed upstream).
   * New patch 08_readonly_devices.dpatch to support read-only operation
     on hard disk devices when using bootoption 'forensic'.
+  * Disable 04_fix_no_medium_found_error.dpatch (fixed upstream).
   * Sync with Debian 1.156.1-1 (mentioning just the relevant changes):
     * Adding note about URL limitations in live-initramfs manpage when
       using fetch parameter.
     * Replacing casper with live in live-new-uuid.
-    * Added missing variable quoting that lead to broken root persistence, thanks
-      to Thierry Walrant <debian.tgc@walrant.net> (Closes: #512656).
-    * Adding patch from Thierry Walrant <debian.tgc@walrant.net> to allow setting
-      a path for the persistence files through persistent-path boot parameter
-      (Closes: #512661).
+    * Added missing variable quoting that lead to broken root persistence,
+      thanks to Thierry Walrant <debian.tgc@walrant.net> (Closes: #512656).
+    * Adding patch from Thierry Walrant <debian.tgc@walrant.net> to allow
+      setting a path for the persistence files through persistent-path boot
+      parameter (Closes: #512661).
     * Adding persistent-path to parameter list and manpage.
     * Actually building/cleaning manpages through targets in Makefile.
     * Also checking for wicd in 23networking, thanks to Ben Armstrong
       <synrg@debian.org>.
-    * Don't redirect output of fstype detection to standard out, thanks to Ronny
-      Standtke <Ronny.Standtke@gmx.net>.
+    * Don't redirect output of fstype detection to standard out, thanks to
+      Ronny Standtke <Ronny.Standtke@gmx.net>.
     * Adding ext4 support.
     * Merging casper 1.156.
     * Updating parameters.txt.
