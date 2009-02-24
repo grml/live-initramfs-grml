@@ -6,8 +6,8 @@
 
 @DPATCH@
 diff -urNad live-initramfs-grml~/debian/rules live-initramfs-grml/debian/rules
---- live-initramfs-grml~/debian/rules	2009-02-22 15:43:59.000000000 +0100
-+++ live-initramfs-grml/debian/rules	2009-02-22 18:32:20.021999087 +0100
+--- live-initramfs-grml~/debian/rules	2009-02-23 13:55:01.000000000 +0100
++++ live-initramfs-grml/debian/rules	2009-02-24 10:05:58.447777665 +0100
 @@ -59,6 +59,8 @@
  	install -m 755 grml/23networking \
  	  ./debian/live-initramfs/usr/share/initramfs-tools/scripts/live-bottom/23networking
@@ -18,8 +18,8 @@ diff -urNad live-initramfs-grml~/debian/rules live-initramfs-grml/debian/rules
  	rm -f debian/live-initramfs/usr/share/doc/live-initramfs/COPYING
  	rm -f debian/live-initramfs/usr/share/doc/live-initramfs/ChangeLog
 diff -urNad live-initramfs-grml~/hooks/live live-initramfs-grml/hooks/live
---- live-initramfs-grml~/hooks/live	2009-02-22 18:32:19.815331281 +0100
-+++ live-initramfs-grml/hooks/live	2009-02-22 18:32:20.021999087 +0100
+--- live-initramfs-grml~/hooks/live	2009-02-24 10:05:58.127763179 +0100
++++ live-initramfs-grml/hooks/live	2009-02-24 10:05:58.447777665 +0100
 @@ -163,6 +163,12 @@
  	copy_exec /usr/bin/wget /bin
  fi
@@ -35,7 +35,7 @@ diff -urNad live-initramfs-grml~/hooks/live live-initramfs-grml/hooks/live
  
 diff -urNad live-initramfs-grml~/scripts/live-premount/readonly live-initramfs-grml/scripts/live-premount/readonly
 --- live-initramfs-grml~/scripts/live-premount/readonly	1970-01-01 01:00:00.000000000 +0100
-+++ live-initramfs-grml/scripts/live-premount/readonly	2009-02-22 18:34:53.115350292 +0100
++++ live-initramfs-grml/scripts/live-premount/readonly	2009-02-24 10:06:38.771091722 +0100
 @@ -0,0 +1,32 @@
 +#!/bin/sh
 +
@@ -64,7 +64,7 @@ diff -urNad live-initramfs-grml~/scripts/live-premount/readonly live-initramfs-g
 +if grep -qe forensic -qe readonly /proc/cmdline ; then
 +   for device in /dev/hd* /dev/sd* ; do
 +      if [ -b "$device" ] ; then
-+	 /usr/bin/printf " * Setting device %-9s to read-only mode: " $device >/dev/console
++	 printf " * Setting device %-9s to read-only mode: " $device >/dev/console
 +         blockdev --setro $device && printf "done [ execute \"blockdev --setrw %-9s\" to unlock]\n" $device >/dev/console || printf "failed\n" >/dev/console
 +       fi
 +   done

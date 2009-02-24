@@ -1,3 +1,9 @@
+live-initramfs (1.156.1-1grml.02) unstable; urgency=low
+
+  * Do not use full path for printf executable. [Closes: issue640]
+
+ -- Michael Prokop <mika@grml.org>  Tue, 24 Feb 2009 10:06:48 +0100
+
 live-initramfs (1.156.1-1grml.01) unstable; urgency=low
 
   * New patch 08_readonly_devices.dpatch to support read-only operation
