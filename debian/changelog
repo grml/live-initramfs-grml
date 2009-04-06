@@ -1,3 +1,11 @@
+live-initramfs (1.157.1-1grml.02) unstable; urgency=low
+
+  * Updating to Debian's git version 03f7e0ea30d52158973ff47bcdebd9932501d143.
+    providing my patch for a smooth udev upgrade path (from 0.125 to 0.140
+    where 'udevadm info' replaces 'udevinfo').
+
+ -- Michael Prokop <mika@grml.org>  Thu, 09 Apr 2009 01:08:30 +0200
+
 live-initramfs (1.157.1-1grml.01) unstable; urgency=low
 
   * Resync with Debian's 1.157.1-1 (mentioning just the relevant changes):
