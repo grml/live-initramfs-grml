@@ -1,14 +1,16 @@
 #! /bin/sh /usr/share/dpatch/dpatch-run
-## 04_fix_no_medium_found_error.dpatch <mika@grml.org>
+## 04_drop_usage_of_fstype.dpatch <mika@grml.org>
 ##
 ## All lines beginning with `## DP:' are a description of the patch.
-## DP: Fix the "cannot open /dev/scd0: No medium found" issue
+## DP: Avoid the use of fstype in a running live system, as it's
+## DP: a executable and not a shell function and causes problems
+## DP: for example within live-snapshot
 
 @DPATCH@
 
 --- a/scripts/live-helpers
 +++ b/scripts/live-helpers
-@@ -67,24 +67,6 @@ is_supported_fs ()
+@@ -76,24 +76,6 @@ is_supported_fs ()
  
  get_fstype ()
  {
@@ -22,7 +24,7 @@
 -	    return
 -	fi
 -
--	eval $(fstype < ${1} 2>/dev/null)
+-	eval $(fstype ${1} 2>/dev/null)
 -
 -	if [ "${FSTYPE}" != "unknown" ]
 -	then
