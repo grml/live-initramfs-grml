@@ -4,8 +4,10 @@ live-initramfs (1.157.1-1grml.03) unstable; urgency=low
     04_drop_usage_of_fstype.dpatch, otherwise live-snapshot will fail
     in a running live-system because fstype is an executable
     on grml, whereas it's just a shell function in live-initramfs.
+  * Updating to Debian's git version 381d8f0952b1ca15338dd2ed26ab5a48c5a6ca67.
+  * Use dh_clean instead of dh_prep to get rid of need for debhelper 7.
 
- -- Michael Prokop <mika@grml.org>  Thu, 23 Apr 2009 11:20:03 +0200
+ -- Michael Prokop <mika@grml.org>  Thu, 23 Apr 2009 11:34:24 +0200
 
 live-initramfs (1.157.1-1grml.02) unstable; urgency=low
 
