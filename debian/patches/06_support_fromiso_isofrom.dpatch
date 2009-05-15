@@ -20,7 +20,7 @@
  			username=*)
  				USERNAME="${ARGUMENT#username=}"
  				LIVECONF="changed"
-@@ -1300,6 +1305,17 @@ check_dev ()
+@@ -1339,6 +1344,17 @@ check_dev ()
  	devname="${2}"
  	skip_uuid_check="${3}"
  
@@ -38,3 +38,19 @@
  	if [ -z "${devname}" ]
  	then
  		devname=$(sys2dev "${sysdev}")
+@@ -1609,6 +1625,15 @@ mountroot ()
+ 		log_end_msg
+ 	fi
+ 
++	# if we do not unmount the ISO we can't run "fsck /dev/ice" later on
++	# because the mountpoint is left behind in /proc/mounts, so let's get
++	# rid of it when running from RAM
++	if [ -n "$FROMISO" ] && [ "${TORAM}" ]
++	then
++	  losetup -d /dev/loop0
++	  grep -q /isofrom /proc/mounts && umount /isofrom
++	fi
++
+ 	if [ -n "${MODULETORAMFILE}" ]
+ 	then
+ 		setup_unionfs "${livefs_root}" "${rootmnt}"
