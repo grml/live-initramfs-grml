@@ -43,11 +43,12 @@ diff -urNad live-initramfs-grml~/scripts/live live-initramfs-grml/scripts/live
  
  		if is_live_path ${mountpoint} && \
  			([ "${skip_uuid_check}" ] || matches_uuid ${mountpoint})
-diff -urNad live-initramfs-grml~/scripts/live-bottom/05mountpoints live-initramfs-grml/scripts/live-bottom/05mountpoints
---- live-initramfs-grml~/grml/05mountpoints	2008-11-04 01:20:22.000000000 +0100
-+++ live-initramfs-grml/grml/05mountpoints	2009-01-12 15:42:20.323387590 +0100
-@@ -33,4 +33,11 @@
- 	mount --move /live/image /root/live/image
+diff --git a/grml/05mountpoints b/grml/05mountpoints
+index e2b07a4..6411171 100755
+--- a/grml/05mountpoints
++++ b/grml/05mountpoints
+@@ -38,4 +38,21 @@ if [ -n "$MOUNTED_ON" ] ; then
+    echo "   -> Mounted live system on $MOUNTED_ON">/dev/console
  fi
  
 +# Move findiso directory to the new root filesystem so that programs there can get at it.
@@ -56,5 +57,15 @@ diff -urNad live-initramfs-grml~/scripts/live-bottom/05mountpoints live-initramf
 +	mkdir -p /root/live/findiso
 +	mount -n --move /live/findiso /root/live/findiso
 +fi
++
++# if we do not unmount the ISO we can't run "fsck /dev/ice" later on
++# because the mountpoint is left behind in /proc/mounts, so let's get
++# rid of it when running from RAM
++if [ -n "$FINDISO" ] && [ "${TORAM}" ]
++then
++  losetup -d /dev/loop0
++  grep -q /live/findiso /proc/mounts && umount /root/live/findiso
++fi
++
 +
  log_end_msg

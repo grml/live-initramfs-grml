@@ -1,3 +1,12 @@
+live-initramfs (1.157.1-1grml.05) unstable; urgency=low
+
+  * Update patch 07_support_findiso.dpatch: make sure to get rid of
+    loopback device and unmount /live/findiso when using findiso
+    bootoption in combination with toram. Thanks to Marc Haber.
+    [Closes: issue675]
+
+ -- Michael Prokop <mika@grml.org>  Fri, 29 May 2009 12:35:06 +0200
+
 live-initramfs (1.157.1-1grml.04) unstable; urgency=low
 
   * Update patch 06_support_fromiso_isofrom.dpatch:
