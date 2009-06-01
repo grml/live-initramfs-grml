@@ -1,3 +1,21 @@
+live-initramfs (1.157.1-1grml.06) unstable; urgency=low
+
+  * Apply bugfix contributed by Andreas Thienemann <andreas@bawue.net>:
+
+    When installing grml for PXE boot the system has network after
+    boot but no usable DNS. /etc/resolv.conf is empty except the
+    warning to not edit this file manually but to use the resolvconf
+    tool.
+
+    The problem is, that the 23networking scripte in the initrd
+    correctly creates the resolv.conf, but it's being overwritten by
+    the resolvconf utility on boot.
+
+    The fix for now is to remove the symlink so resolvconf breaks
+    early and DNS is working then.
+
+ -- Michael Prokop <mika@grml.org>  Mon, 01 Jun 2009 18:47:01 +0200
+
 live-initramfs (1.157.1-1grml.05) unstable; urgency=low
 
   * Update patch 07_support_findiso.dpatch: make sure to get rid of
