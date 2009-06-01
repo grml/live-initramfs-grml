@@ -1,3 +1,12 @@
+live-initramfs (1.157.1-1grml.07) unstable; urgency=low
+
+  * Apply PXE patch on our own networking script instead of
+    using upstream's file.
+  * Bootoption readonly: set all present virtio blockdevices
+    (/dev/vd*) to readonly as well (thanks, gebi).
+
+ -- Michael Prokop <mika@grml.org>  Tue, 02 Jun 2009 01:05:17 +0200
+
 live-initramfs (1.157.1-1grml.06) unstable; urgency=low
 
   * Apply bugfix contributed by Andreas Thienemann <andreas@bawue.net>:

@@ -19,8 +19,8 @@
 @DPATCH@
 diff --git a/scripts/live-bottom/23networking b/scripts/live-bottom/23networking
 index 72aaf12..244eeca 100755
---- a/scripts/live-bottom/23networking
-+++ b/scripts/live-bottom/23networking
+--- a/grml/23networking
++++ b/grml/23networking
 @@ -110,6 +110,11 @@ EOF
  	then
  		if [ -f /netboot.config ]

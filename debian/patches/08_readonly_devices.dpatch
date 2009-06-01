@@ -62,7 +62,7 @@ diff -urNad live-initramfs-grml~/scripts/live-premount/readonly live-initramfs-g
 +# make sure all harddisk devices are read-only
 +# this is important for forensic investigations
 +if grep -qe forensic -qe readonly /proc/cmdline ; then
-+   for device in /dev/hd* /dev/sd* ; do
++   for device in /dev/hd* /dev/sd* /dev/vd* ; do
 +      if [ -b "$device" ] ; then
 +	 printf " * Setting device %-9s to read-only mode: " $device >/dev/console
 +         blockdev --setro $device && printf "done [ execute \"blockdev --setrw %-9s\" to unlock]\n" $device >/dev/console || printf "failed\n" >/dev/console
