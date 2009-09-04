@@ -104,7 +104,7 @@ where_is_mounted ()
 	if grep -q "^${device} " /proc/mounts
 	then
 		# return the first found
-		grep "^${device} " /proc/mounts | cut -f2 -d ' '
+		grep -m1 "^${device} " /proc/mounts | cut -f2 -d ' '
 	fi
 }
 
@@ -328,21 +328,14 @@ find_cow_device ()
 			fi
 
 			# Checking for a luks device
-			if [ -e /sbin/cryptsetup ] && /sbin/cryptsetup isLuks ${devname}
+			if [ "${PERSISTENT}" = "cryptsetup" ] && [ -e /sbin/cryptsetup ] && /sbin/cryptsetup isLuks ${devname}
 			then
 				while true
 				do
 					load_keymap
 
-					echo -n "Enter passphrase for ${pers_label} on ${devname}: " >&6
-					read -s passphrase
-					echo "${passphrase}" > /tmp/passphrase
-					unset passphrase
-					exec 9</tmp/passphrase
-					/sbin/cryptsetup luksOpen ${devname} $(basename ${devname})
+					/lib/cryptsetup/askpass "Enter passphrase for ${pers_label} on ${devname}: " | /sbin/cryptsetup -T 1 luksOpen ${devname} $(basename ${devname}) --key-file=-
 					error=${?}
-					exec 9<&-
-					rm -f /tmp/passphrase
 
 					devname="/dev/mapper/$(basename ${devname})"
 
@@ -367,14 +360,14 @@ find_cow_device ()
 			if [ "$(/lib/udev/vol_id -l ${devname} 2>/dev/null)" = "${pers_label}" ]
 			then
 				echo "${devname}"
-				return
+				return 0
 			fi
 
 			if [ "${PERSISTENT}" = "nofiles" ]
 			then
 				# do not mount the device to find for image files
 				# just skip this
-				break
+				continue
 			fi
 
 			case "$(get_fstype ${devname})" in
@@ -398,6 +391,7 @@ find_cow_device ()
 			esac
 		done
 	done
+	return 1
 }
 
 find_files ()

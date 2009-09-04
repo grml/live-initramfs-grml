@@ -1,5 +1,6 @@
-live-initramfs (1.157.1-1grml.08) UNRELEASED; urgency=low
+live-initramfs (1.157.3-1grml.00) UNRELEASED; urgency=low
 
+  * Synchronise with Debian's version 1.157.3-1.
   * debian/patches/07_support_findiso.dpatch: insert a leading "/"
     in front of the FINDISO argument so it doesn't hit persons
     who forget a slash in the bootoption. Suggested by
@@ -7,7 +8,7 @@ live-initramfs (1.157.1-1grml.08) UNRELEASED; urgency=low
   * grml/23networking: add support for bootoption noudev so the
     udev part in initramfs is skipped as well.
 
- -- Michael Prokop <mika@grml.org>  Sat, 05 Sep 2009 00:23:00 +0200
+ -- Michael Prokop <mika@grml.org>  Sat, 05 Sep 2009 00:25:44 +0200
 
 live-initramfs (1.157.1-1grml.07) unstable; urgency=low
 
