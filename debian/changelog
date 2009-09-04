@@ -4,8 +4,10 @@ live-initramfs (1.157.1-1grml.08) UNRELEASED; urgency=low
     in front of the FINDISO argument so it doesn't hit persons
     who forget a slash in the bootoption. Suggested by
     Philip Hands <phil@hands.com> - thanks!
+  * grml/23networking: add support for bootoption noudev so the
+    udev part in initramfs is skipped as well.
 
- -- Michael Prokop <mika@grml.org>  Thu, 02 Jul 2009 10:40:33 +0200
+ -- Michael Prokop <mika@grml.org>  Sat, 05 Sep 2009 00:23:00 +0200
 
 live-initramfs (1.157.1-1grml.07) unstable; urgency=low
 
