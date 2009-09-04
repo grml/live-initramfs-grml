@@ -1,4 +1,4 @@
-live-initramfs (1.157.3-1grml.00) UNRELEASED; urgency=low
+live-initramfs (1.157.3-1grml.00) unstable; urgency=low
 
   * Synchronise with Debian's version 1.157.3-1.
   * debian/patches/07_support_findiso.dpatch: insert a leading "/"
@@ -10,7 +10,7 @@ live-initramfs (1.157.3-1grml.00) UNRELEASED; urgency=low
   * New patch 10_support_ethdevice.dpatch: support setting NIC name
     via ethdevice. Thanks to Helge Wagner! [Testing: issue724]
 
- -- Michael Prokop <mika@grml.org>  Sat, 05 Sep 2009 01:01:38 +0200
+ -- Michael Prokop <mika@grml.org>  Sat, 05 Sep 2009 01:53:46 +0200
 
 live-initramfs (1.157.1-1grml.07) unstable; urgency=low
 
