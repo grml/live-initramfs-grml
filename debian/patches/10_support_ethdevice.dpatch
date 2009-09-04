@@ -1,0 +1,24 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 10_support_ethdevice.dpatch by <mika@grml.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Support bootoption ethdevice
+
+@DPATCH@
+
+diff --git a/scripts/live b/scripts/live
+index db1d355..797a5da 100755
+--- a/scripts/live
++++ b/scripts/live
+@@ -66,6 +66,11 @@ Arguments ()
+ 				set -x
+ 				;;
+ 
++			ethdevice=*)
++				DEVICE="${ARGUMENT#ethdevice=}"
++				export DEVICE
++				;;
++
+ 			fetch=*)
+                                 FETCH="${ARGUMENT#fetch=}"
+                                 export FETCH

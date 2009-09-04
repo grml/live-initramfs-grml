@@ -7,3 +7,4 @@
 07_support_findiso.dpatch
 08_readonly_devices.dpatch
 09_fix_resolvconf_pxeboot.dpatch
+10_support_ethdevice.dpatch

@@ -7,8 +7,10 @@ live-initramfs (1.157.3-1grml.00) UNRELEASED; urgency=low
     Philip Hands <phil@hands.com> - thanks!
   * grml/23networking: add support for bootoption noudev so the
     udev part in initramfs is skipped as well.
+  * New patch 10_support_ethdevice.dpatch: support setting NIC name
+    via ethdevice. Thanks to Helge Wagner! [Testing: issue724]
 
- -- Michael Prokop <mika@grml.org>  Sat, 05 Sep 2009 00:25:44 +0200
+ -- Michael Prokop <mika@grml.org>  Sat, 05 Sep 2009 01:01:38 +0200
 
 live-initramfs (1.157.1-1grml.07) unstable; urgency=low
 
