@@ -1,3 +1,13 @@
+live-initramfs (1.157.3-1grml.01) unstable; urgency=low
+
+  * Add debian/patches/11_dhcphostname.patch (initial version by
+    Andreas Thienemann <andreas@bawue.net> - thanks!):
+    Support 'nodhcphostname' option which will disable setting the
+    hostname of the booted system according to the dns information.
+    This patch takes care of the netboot case.
+
+ -- Michael Prokop <mika@grml.org>  Sat, 17 Oct 2009 16:43:56 +0200
+
 live-initramfs (1.157.3-1grml.00) unstable; urgency=low
 
   * Synchronise with Debian's version 1.157.3-1.

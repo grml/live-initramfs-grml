@@ -1,0 +1,49 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 11_dhcphostname.dpatch by Andreas Thienemann <andreas@bawue.net>
+## and Michael Prokop <mika@grml.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Support disabling setting hostname via DNS info
+
+@DPATCH@
+
+Support 'nodhcphostname' option which will disable setting the
+hostname of the booted system according to the DNS information.
+This patch takes care of the netboot case.
+
+--- a/grml/23networking	2009-06-02 11:57:00.156614733 +0200
++++ b/grml/23networking	2009-06-02 12:00:04.623804092 +0200
+@@ -140,6 +140,19 @@ ${rc_server1}
+ EOF
+ 
+ 			cat /root/etc/resolv.conf >> /root/var/log/netboot.config
++
++			if [ -z "$NODHCPHOSTNAME" ]
++			then
++				dhcp_address=$(cat netboot.config | awk '/address:/{print $2}')
++				dhcp_hostname=$(busybox nslookup ${dhcp_address} ${rc_server0#nameserver }| awk \
++					'/Address 1: '${dhcp_address}'/{ print $4 }')
++
++				if [ -n "$dhcp_hostname" ]
++				then
++					echo $dhcp_hostname > /root/etc/hostname
++				fi
++				unset dhcp_address dhcp_hostname dhcp_hostname
++			fi
+ 		fi
+ 	fi
+ fi
+--- a/scripts/live
++++ b/scripts/live
+@@ -241,6 +241,11 @@ Arguments ()
+ 				export NOCONSOLEKEYBOARD
+ 				;;
+ 
++			nodhcphostname)
++				NODHCPHOSTNAME="Yes"
++				export NODHCPHOSTNAME
++				;;
++
+ 			nofastboot)
+ 				NOFASTBOOT="Yes"
+ 				export NOFASTBOOT
