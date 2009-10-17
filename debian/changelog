@@ -5,8 +5,9 @@ live-initramfs (1.157.3-1grml.01) unstable; urgency=low
     Support 'nodhcphostname' option which will disable setting the
     hostname of the booted system according to the dns information.
     This patch takes care of the netboot case.
+  * Bump Standards-Version to 3.8.3 (no further changes).
 
- -- Michael Prokop <mika@grml.org>  Sat, 17 Oct 2009 16:43:56 +0200
+ -- Michael Prokop <mika@grml.org>  Sat, 17 Oct 2009 17:21:44 +0200
 
 live-initramfs (1.157.3-1grml.00) unstable; urgency=low
 
