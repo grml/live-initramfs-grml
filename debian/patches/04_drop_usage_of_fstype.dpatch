@@ -4,13 +4,14 @@
 ## All lines beginning with `## DP:' are a description of the patch.
 ## DP: Avoid the use of fstype in a running live system, as it's
 ## DP: a executable and not a shell function and causes problems
-## DP: for example within live-snapshot
+## DP: for example within live-snapshot.
+## DP: Further switch from vol_id to blkid if using udev >=146-1.
 
 @DPATCH@
-
---- a/scripts/live-helpers
-+++ b/scripts/live-helpers
-@@ -76,24 +76,6 @@ is_supported_fs ()
+diff -urNad live-initramfs-grml~/scripts/live-helpers live-initramfs-grml/scripts/live-helpers
+--- live-initramfs-grml~/scripts/live-helpers	2009-11-13 23:45:28.000000000 +0100
++++ live-initramfs-grml/scripts/live-helpers	2009-11-13 23:59:36.524643320 +0100
+@@ -76,25 +76,17 @@
  
  get_fstype ()
  {
@@ -27,11 +28,46 @@
 -	eval $(fstype ${1} 2>/dev/null)
 -
 -	if [ "${FSTYPE}" != "unknown" ]
--	then
++	# udev >=146-1 no longer provides vol_id:
++	if [ -x /lib/udev/vol_id ]
+ 	then
 -		echo ${FSTYPE}
 -		return 0
--	fi
++		/lib/udev/vol_id -t ${1} 2>/dev/null
++	else
++		eval $(blkid -o udev "${1}")
++		if [ -n "$ID_FS_TYPE" ]
++		then
++			echo "${ID_FS_TYPE}"
++		fi
+ 	fi
 -
- 	/lib/udev/vol_id -t ${1} 2>/dev/null
+-	/lib/udev/vol_id -t ${1} 2>/dev/null
  }
  
+ where_is_mounted ()
+@@ -357,10 +349,21 @@
+ 				done
+ 			fi
+ 
+-			if [ "$(/lib/udev/vol_id -l ${devname} 2>/dev/null)" = "${pers_label}" ]
++			# udev >=146-1 no longer provides vol_id:
++			if [ -x /lib/udev/vol_id ]
+ 			then
+-				echo "${devname}"
+-				return 0
++				if [ "$(/lib/udev/vol_id -l ${devname} 2>/dev/null)" = "${pers_label}" ]
++				then
++					echo "${devname}"
++					return 0
++				fi
++			else
++				eval $(blkid -o udev "${devname}")
++				if [ "$ID_FS_LABEL" = "${pers_label}" ]
++				then
++					echo "${devname}"
++					return 0
++				fi
+ 			fi
+ 
+ 			if [ "${PERSISTENT}" = "nofiles" ]

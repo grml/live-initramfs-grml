@@ -1,8 +1,10 @@
 live-initramfs (1.157.4-1grml.00) unstable; urgency=low
 
   * Synchronise with Debian's version 1.157.4-1.
+  * Update debian/patches/04_drop_usage_of_fstype.dpatch to address
+    vol_id -> blkid issue (see #555529).
 
- -- Michael Prokop <mika@grml.org>  Fri, 13 Nov 2009 21:00:07 +0100
+ -- Michael Prokop <mika@grml.org>  Fri, 13 Nov 2009 23:29:39 +0100
 
 live-initramfs (1.157.3-1grml.01) unstable; urgency=low
 
