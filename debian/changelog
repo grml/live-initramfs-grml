@@ -1,3 +1,9 @@
+live-initramfs (1.157.4-1grml.00) unstable; urgency=low
+
+  * Synchronise with Debian's version 1.157.4-1.
+
+ -- Michael Prokop <mika@grml.org>  Fri, 13 Nov 2009 21:00:07 +0100
+
 live-initramfs (1.157.3-1grml.01) unstable; urgency=low
 
   * Add debian/patches/11_dhcphostname.patch (initial version by
