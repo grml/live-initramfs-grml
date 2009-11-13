@@ -5,10 +5,10 @@
 ## DP: Support more verbose version of toram via rsync
 
 @DPATCH@
-
---- a/scripts/live
-+++ b/scripts/live
-@@ -640,7 +640,7 @@ copy_live_to ()
+diff -urNad live-initramfs-grml~/scripts/live live-initramfs-grml/scripts/live
+--- live-initramfs-grml~/scripts/live	2009-11-13 18:51:34.000000000 +0100
++++ live-initramfs-grml/scripts/live	2009-11-13 18:55:37.366466532 +0100
+@@ -673,7 +673,7 @@
  
  	# begin copying (or uncompressing)
  	mkdir "${copyto}"
@@ -17,30 +17,32 @@
  	mount -t "${fstype}" ${mount_options} "${dev}" "${copyto}"
  
  	if [ "${extension}" = "tgz" ]
-@@ -653,10 +653,22 @@ copy_live_to ()
+@@ -686,11 +686,23 @@
  	else
  		if [ -n "${MODULETORAMFILE}" ]
  		then
 -			cp ${MODULETORAMFILE} ${copyto} # copy only the filesystem module
 -		else
--			cp -a ${copyfrom}/* ${copyto}   # "cp -a" from busybox also copies hidden files
+-			mkdir -p ${copyto}/${LIVE_MEDIA_PATH}
+-			cp -a ${copyfrom}/${LIVE_MEDIA_PATH}/* ${copyto}/${LIVE_MEDIA_PATH}   # "cp -a" from busybox also copies hidden files
 -		fi
-+                   if [ -x /bin/rsync ] ; then
-+                   echo " * Copying $MODULETORAMFILE to RAM" 1>/dev/console
-+                      rsync -a --progress ${MODULETORAMFILE} ${copyto} 1>/dev/console # copy only the filesystem module
-+                   else
-+                      cp ${MODULETORAMFILE} ${copyto} # copy only the filesystem module
-+                   fi
-+                else
-+                   if [ -x /bin/rsync ] ; then
-+                      echo " * Copying whole medium to RAM" 1>/dev/console
-+                      rsync -a --progress ${copyfrom}/* ${copyto} 1>/dev/console  # "cp -a" from busybox also copies hidden files
-+                      echo "   -> Tip: boot using 'grml2ram' or use 'grml toram=...'" 1>/dev/console
-+                      echo "           to copy the image only instead of the whole medium" 1>/dev/console
-+                   else
-+                      cp -a ${copyfrom}/* ${copyto}   # "cp -a" from busybox also copies hidden files
-+                   fi
-+                fi
++                    if [ -x /bin/rsync ] ; then
++                    echo " * Copying $MODULETORAMFILE to RAM" 1>/dev/console
++                       rsync -a --progress ${MODULETORAMFILE} ${copyto} 1>/dev/console # copy only the filesystem module
++                    else
++                       cp ${MODULETORAMFILE} ${copyto} # copy only the filesystem module
++                    fi
++                 else
++                    if [ -x /bin/rsync ] ; then
++                       echo " * Copying whole medium to RAM" 1>/dev/console
++                       rsync -a --progress ${copyfrom}/* ${copyto} 1>/dev/console  # "cp -a" from busybox also copies hidden files
++                       echo "   -> Tip: boot using 'grml2ram' or use 'grml toram=...'" 1>/dev/console
++                       echo "           to copy the image only instead of the whole medium" 1>/dev/console
++                    else
++                       mkdir -p ${copyto}/${LIVE_MEDIA_PATH}
++                       cp -a ${copyfrom}/${LIVE_MEDIA_PATH}/* ${copyto}/${LIVE_MEDIA_PATH}   # "cp -a" from busybox also copies hidden files
++                    fi
++                 fi
  
- 		livefs_root
  		umount ${copyfrom}
+ 		mount -r -o move ${copyto} ${copyfrom}
