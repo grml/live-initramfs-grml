@@ -1,3 +1,13 @@
+live-initramfs (1.157.4-1grml.01) unstable; urgency=low
+
+  * 10_support_ethdevice.dpatch - more robust network booting:
+    Support multiple network devices in bootoption ethdevice,
+    new bootoption ethdevice-timeout (override the default being
+    15 seconds for configuration) and automatically try to configure
+    all present network devices if not configured otherwise.
+
+ -- Michael Prokop <mika@grml.org>  Tue, 29 Dec 2009 22:38:10 +0100
+
 live-initramfs (1.157.4-1grml.00) unstable; urgency=low
 
   * Synchronise with Debian's version 1.157.4-1.
