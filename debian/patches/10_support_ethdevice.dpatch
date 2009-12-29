@@ -64,7 +64,7 @@ diff -urNad live-initramfs-grml~/scripts/live live-initramfs-grml/scripts/live
 +		jobid=$!
 +		sleep "$ETHDEV_TIMEOUT" ; sleep 1
 +		if [ -r /proc/"$jobid"/status ] ; then
-+			echo "Killing job $jobid for device $dev as ipconfig ran into recursioni..."
++			echo "Killing job $jobid for device $dev as ipconfig ran into recursion..."
 +			kill -9 $jobid
 +		fi
 +
