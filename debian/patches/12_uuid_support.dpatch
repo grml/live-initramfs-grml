@@ -1,0 +1,93 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 12_uuid_support.dpatch by Michael Prokop <prokop@grml-forensic.org>
+##
+## DP: This patch enables support for verifying the ISO through bootid=.... bootoption.
+## DP: Logic behind bootoptions and possible combinations:
+## DP: * bootid.txt + wrong bootid=...                    => fails to boot
+## DP: * bootid.txt + right bootid=...                    => boots
+## DP: * bootid.txt + ignore_bootid                       => boots
+## DP: * bootid.txt + no bootid=... + no ignore_bootid    => fails to boot
+## DP: * no bootid.txt + no bootid=... + no ignore_bootid => boots
+## DP: * no bootid.txt + bootid=...                       => fails to boot
+## DP: * no bootid.txt + ignore_bootid=...                => boots
+
+@DPATCH@
+diff -urNad live-initramfs-grml~/scripts/live live-initramfs-grml/scripts/live
+--- live-initramfs-grml~/scripts/live	2010-02-01 20:31:44.410884646 +0100
++++ live-initramfs-grml/scripts/live	2010-02-01 20:32:09.131721944 +0100
+@@ -54,6 +54,12 @@
+ 				export ACCESS
+ 				;;
+ 
++			bootid=*)
++				BOOTID="${ARGUMENT#bootid=}"
++				export BOOTID
++				;;
++
++
+ 			console=*)
+ 				DEFCONSOLE="${ARGUMENT#*=}"
+ 				export DEFCONSOLE
+@@ -129,6 +135,11 @@
+ 				export USERFULLNAME LIVECONF
+ 				;;
+ 
++			ignore_bootid)
++				IGNORE_BOOTID="Yes"
++				export IGNORE_BOOTID
++				;;
++
+ 			ignore_uuid)
+ 				IGNORE_UUID="Yes"
+ 				export IGNORE_UUID
+@@ -556,6 +567,41 @@
+ 	return 1
+ }
+ 
++grml_match_bootid()
++{
++	path="$1"
++
++	if [ -n "$IGNORE_BOOTID" ] ; then
++		echo " * Ignoring verification of bootid.txt as requested via ignore_bootid.">>/live.log
++		return 0
++	fi
++
++	if [ -n "$BOOTID" ] && ! [ -r "${path}/conf/bootid.txt" ] ; then
++		echo "  * Warning: bootid=... specified but no bootid.txt found on currently requested device.">>/live.log
++		return 1
++	fi
++
++	[ -r "${path}/conf/bootid.txt" ] || return 0
++
++	bootid_conf=$(cat "${path}/conf/bootid.txt")
++
++	if [ -z "$BOOTID" -a -z "$IGNORE_BOOTID" ]
++	then
++		echo " * Warning: bootid.txt found but ignore_bootid / bootid=.. bootoption missing...">>/live.log
++		return 1
++	fi
++
++	if [ "$BOOTID" = "$bootid_conf" ]
++	then
++		echo " * Successfully verified /conf/bootid.txt from ISO, continuing... ">>/live.log
++	else
++		echo " * Warning: BOOTID of ISO does not match. Retrying and continuing search...">>/live.log
++		return 1
++	fi
++
++	return 0
++}
++
+ matches_uuid ()
+ {
+ 	if [ "${IGNORE_UUID}" ] || [ ! -e /conf/uuid.conf ]
+@@ -1504,7 +1550,7 @@
+ 		fi
+ 
+ 		if is_live_path ${mountpoint} && \
+-			([ "${skip_uuid_check}" ] || matches_uuid ${mountpoint})
++			([ "${skip_uuid_check}" ] || grml_match_bootid ${mountpoint})
+ 		then
+ 			echo ${mountpoint}
+ 			return 0
