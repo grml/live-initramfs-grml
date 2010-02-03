@@ -1,3 +1,9 @@
+live-initramfs (1.157.4-1grml.02) unstable; urgency=low
+
+  * Support bootoption bootid.
+
+ -- Michael Prokop <mika@grml.org>  Wed, 03 Feb 2010 01:44:06 +0100
+
 live-initramfs (1.157.4-1grml.01) unstable; urgency=low
 
   * 10_support_ethdevice.dpatch - more robust network booting:
