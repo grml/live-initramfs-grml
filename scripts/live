@@ -717,7 +717,7 @@ copy_live_to ()
 
 	# begin copying (or uncompressing)
 	mkdir "${copyto}"
-	echo "mount -t ${fstype} ${mount_options} ${dev} ${copyto}"
+	log_begin_msg "mount -t ${fstype} ${mount_options} ${dev} ${copyto}"
 	mount -t "${fstype}" ${mount_options} "${dev}" "${copyto}"
 
 	if [ "${extension}" = "tgz" ]
@@ -1109,7 +1109,7 @@ setup_unionfs ()
 
 	if [ "${UNIONTYPE}" = "aufs" ]
 	then
-		roopt="rr,xino=/tmp/aufs.xino"
+		roopt="rr,noxino"
 	else
 		roopt="ro"
 	fi
