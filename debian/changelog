@@ -1,3 +1,22 @@
+live-initramfs (1.173.3-1grml.01) unstable; urgency=low
+
+  * Synchronise with Debian's version 1.173.3-1.
+  * Drop 5 of my patches that have been integrated upstream:
+    - 01_add_rsync.dpatch
+    - 02_more_verbose_toram.dpatch
+    - 04_drop_usage_of_fstype.dpatch
+    - 06_support_fromiso_isofrom.dpatch
+    - 08_readonly_devices.dpatch
+  * Change wording from "Mounted live system on ..." to
+    "Mounted live system from ..." and use '*' instead of '->' for
+    visualisation.
+  * Reword failure message in 05_boot_failure_message_grml.dpatch.
+  * New patch: always display warnings and failures on console, ignore
+    "quiet" bootoption and override log_* functions from initramfs-tools.
+  * Add patch 10validateroot to validate root device before accessing it.
+
+ -- Michael Prokop <mika@grml.org>  Sat, 20 Feb 2010 17:20:05 +0100
+
 live-initramfs (1.157.4-1grml.02) unstable; urgency=low
 
   * Support bootoption bootid.
