@@ -1,0 +1,27 @@
+#!/bin/sh
+
+#set -e
+
+# initramfs-tools header
+
+PREREQ=""
+
+prereqs()
+{
+        echo "${PREREQ}"
+}
+
+case "${1}" in
+        prereqs)
+                prereqs
+                exit 0
+                ;;
+esac
+
+. /scripts/live-functions
+. /scripts/live-helpers
+
+if ! [ -x "/root/sbin/init" ] ; then
+  panic "rootfs can not be mounted as supposed because of fatal error during bootup."
+fi
+
