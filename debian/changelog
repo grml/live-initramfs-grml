@@ -1,3 +1,10 @@
+live-initramfs (1.173.3-1grml.02) unstable; urgency=low
+
+  * New patch to prefer removable devices over non-removable devices,
+    so scan them first.
+
+ -- Michael Prokop <mika@grml.org>  Thu, 11 Mar 2010 10:18:05 +0100
+
 live-initramfs (1.173.3-1grml.01) unstable; urgency=low
 
   * Synchronise with Debian's version 1.173.3-1.

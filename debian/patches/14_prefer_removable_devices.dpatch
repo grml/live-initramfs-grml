@@ -1,0 +1,31 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 14_prefer_removable_devices.dpatch by Michael Prokop <mika@grml.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: prefer removable devices over non-removable devices, so scan them first
+
+@DPATCH@
+diff -urNad '--exclude=CVS' '--exclude=.svn' '--exclude=.git' '--exclude=.arch' '--exclude=.hg' '--exclude=_darcs' '--exclude=.bzr' live-initramfs-grml~/scripts/live live-initramfs-grml/scripts/live
+--- live-initramfs-grml~/scripts/live	2010-03-11 09:21:56.059389954 +0100
++++ live-initramfs-grml/scripts/live	2010-03-11 10:17:05.482395328 +0100
+@@ -1669,8 +1669,20 @@
+ 	esac
+ 
+ 	# or do the scan of block devices
++	# prefer removable devices over non-removable devices, so scan them first
+ 	for sysblock in $(echo /sys/block/* | tr ' ' '\n' | grep -vE "/(loop|ram|dm-|fd)")
+ 	do
++		if [ "$(cat ${sysblock}/removable)" = "1" ]
++		then
++			removable_devices_to_scan="$removable_devices_to_scan $sysblock"
++		else
++			nonremovable_devices_to_scan="$nonremovable_devices_to_scan $sysblock"
++		fi
++	done
++	devices_to_scan="$removable_devices_to_scan $nonremovable_devices_to_scan"
++
++	for sysblock in $devices_to_scan
++	do
+ 		devname=$(sys2dev "${sysblock}")
+ 		fstype=$(get_fstype "${devname}")
+ 
