@@ -6,9 +6,9 @@
 
 @DPATCH@
 diff -urNad '--exclude=CVS' '--exclude=.svn' '--exclude=.git' '--exclude=.arch' '--exclude=.hg' '--exclude=_darcs' '--exclude=.bzr' live-initramfs-grml~/scripts/live live-initramfs-grml/scripts/live
---- live-initramfs-grml~/scripts/live	2010-03-11 11:27:33.574467706 +0100
-+++ live-initramfs-grml/scripts/live	2010-03-11 11:35:59.275256127 +0100
-@@ -1537,12 +1537,30 @@
+--- live-initramfs-grml~/scripts/live	2010-03-23 02:23:29.802852345 +0100
++++ live-initramfs-grml/scripts/live	2010-03-23 02:24:27.996164127 +0100
+@@ -1537,12 +1537,31 @@
  	# support for fromiso=.../isofrom=....
  	if [ -n "$FROMISO" ]
  	then
@@ -23,18 +23,19 @@ diff -urNad '--exclude=CVS' '--exclude=.svn' '--exclude=.git' '--exclude=.arch' 
 +		then
 +			# to support unusual device names like /dev/cciss/c0d0p1
 +			# as well we have to identify the block device name, let's
-+			# do that for up to 10 levels
-+			i=10
-+			while ! [ -b "$ISO_DEVICE" ] && [ -n "$ISO_DEVICE" ] && [ "$ISO_DEVICE" != "/dev" ] && [ "$i" -gt 0 ]
++			# do that for up to 15 levels
++			i=15
++			while [ -n "$ISO_DEVICE" ] && [ "$i" -gt 0 ]
 +			do
-+				ISO_DEVICE=$(dirname ${ISO_DEVICE%/*})
-+				i=$(($i -1))
-+			done
++				ISO_DEVICE=$(dirname ${ISO_DEVICE})
++				[ -b "$ISO_DEVICE" ] && break
++		 		i=$(($i -1))
++		        done
 +		fi
-+		
-+		if [ "$ISO_DEVICE" = "/dev" ]
++
++		if [ "$ISO_DEVICE" = "/" ]
 +		then
-+			echo "Warning: specified device for bootoption isofrom= ($FROMISO) not found.">>/live.log
++			echo "Warning: device for bootoption isofrom= ($FROMISO) not found.">>/live.log
 +		else
 +			mkdir /isofrom
 +			mount "$ISO_DEVICE" /isofrom
