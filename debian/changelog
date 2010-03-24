@@ -1,10 +1,12 @@
-live-initramfs (1.173.3-1grml.02) unstable; urgency=low
+live-initramfs (1.177.1-1grml.00) unstable; urgency=low
 
   * New patch to prefer removable devices over non-removable devices,
     so scan them first.
   * Support cciss host adapter in bootoption isofrom. [Closes: issue827]
+  * Synchronise with Debian's version 1.177.1-1 and its following
+    git commit bcf8114.
 
- -- Michael Prokop <mika@grml.org>  Thu, 11 Mar 2010 11:39:38 +0100
+ -- Michael Prokop <mika@grml.org>  Wed, 24 Mar 2010 01:05:31 +0100
 
 live-initramfs (1.173.3-1grml.01) unstable; urgency=low
 
