@@ -1,3 +1,11 @@
+live-initramfs (1.177.1-1grml.02) unstable; urgency=low
+
+  * aufs2 in kernel 2.6.33 has a regression with regards to
+    accessing directories, causing e.g. FAI to fail.
+    A simple workaround in 05mountpoints addresses this issue.
+
+ -- Michael Prokop <mika@grml.org>  Thu, 01 Apr 2010 15:08:46 +0200
+
 live-initramfs (1.177.1-1grml.00) unstable; urgency=low
 
   * New patch to prefer removable devices over non-removable devices,
