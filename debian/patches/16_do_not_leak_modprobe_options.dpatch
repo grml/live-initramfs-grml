@@ -1,0 +1,24 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 16_do_not_leak_modprobe_options.dpatch by Michael Prokop <mika@grml.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: do not leak modprobe options to avoid booting errors with
+## DP: kernel options like libata.dma=0
+
+@DPATCH@
+diff -urNad '--exclude=CVS' '--exclude=.svn' '--exclude=.git' '--exclude=.arch' '--exclude=.hg' '--exclude=_darcs' '--exclude=.bzr' live-initramfs-grml~/scripts/live-helpers live-initramfs-grml/scripts/live-helpers
+--- live-initramfs-grml~/scripts/live-helpers	2010-03-30 13:53:44.000000000 +0200
++++ live-initramfs-grml/scripts/live-helpers	2010-04-02 13:38:42.152615342 +0200
+@@ -187,7 +187,11 @@
+ 	local encryption=${5}
+ 	local readonly=${6}
+ 
+-	modprobe -q -b "${module}"
++	# the output of setup_loop is evaluated in other functions,
++	# modprobe leaks kernel options like "libata.dma=0"
++	# as "options libata dma=0" on stdout, causing serious
++	# problems therefor, so instead always avoid output to stdout
++	modprobe -q -b "${module}" 1>/dev/null
+ 
+ 	udevadm settle
+ 

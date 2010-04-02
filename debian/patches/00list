@@ -8,3 +8,4 @@
 13_always_display_warnings_and_failures.dpatch
 14_prefer_removable_devices.dpatch
 15_support_cciss_in_isofrom.dpatch
+16_do_not_leak_modprobe_options.dpatch
