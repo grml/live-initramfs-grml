@@ -1,3 +1,16 @@
+live-initramfs (1.215.1-1grml.00) unstable; urgency=low
+
+  * Sync with Debian's version 1.215.1-1.
+  * Update debian/control (bump Standards-Version to 3.8.4 and
+    sync with Debian).
+  * Refresh debian/patches/07_support_findiso.dpatch.
+  * Drop 10_support_ethdevice.dpatch (applied upstream).
+  * Drop 14_prefer_removable_devices.dpatch (applied upstream).
+  * Drop 15_support_cciss_in_isofrom.dpatch (applied upstream).
+  * Drop 16_do_not_leak_modprobe_options.dpatch (applied upstream).
+
+ -- Michael Prokop <mika@grml.org>  Tue, 11 May 2010 11:12:38 +0200
+
 live-initramfs (1.177.1-1grml.03) unstable; urgency=low
 
   * Avoid booting failures when kernel options like libata.dma=0
