@@ -20,6 +20,7 @@ USERFULLNAME="Live user"
 HOSTNAME="host"
 
 mkdir -p "${mountpoint}"
+tried="/tmp/tried"
 
 # Create /etc/mtab for debug purpose and future syncs
 if [ ! -d /etc ]
@@ -45,6 +46,7 @@ fi
 Arguments ()
 {
 	PRESEEDS=""
+	LOCATIONS=""
 
 	for ARGUMENT in $(cat /proc/cmdline)
 	do
@@ -98,6 +100,16 @@ Arguments ()
 			ethdevice=*)
 				DEVICE="${ARGUMENT#ethdevice=}"
 				export DEVICE
+				;;
+
+			ethdevice=*)
+				ETHDEVICE="${ARGUMENT#ethdevice=}"
+				export ETHDEVICE
+				;;
+
+			ethdevice-timeout=*)
+				ETHDEV_TIMEOUT="${ARGUMENT#ethdevice-timeout=}"
+				export ETHDEV_TIMEOUT
 				;;
 
 			fetch=*)
@@ -407,8 +419,8 @@ Arguments ()
 				;;
 
 			preseed/file=*|file=*)
-				LOCATION="${ARGUMENT#*=}"
-				export LOCATION
+				LOCATIONS="${ARGUMENT#*=} ${LOCATIONS}"
+				export LOCATIONS
 				;;
 
 			nopreseed)
@@ -417,7 +429,7 @@ Arguments ()
 				;;
 
 			url=*)
-				location="${ARGUMENT#url=}"
+				URL_LOCATION="${ARGUMENT#url=}"
 
 				mount -o bind /sys /root/sys
 				mount -o bind /proc /root/proc
@@ -425,14 +437,14 @@ Arguments ()
 
 				mkdir -p /root/var/run/network
 				[ "${NETBOOT}" ] || chroot /root dhclient eth0
-				chroot /root wget -P /tmp "${location}"
+				chroot /root wget -P /tmp "${URL_LOCATION}"
 				[ "${NETBOOT}" ] || chroot /root ifconfig eth0 down
 
 				umount /root/sys
 				umount /root/proc
 				umount /root/dev
 
-				LOCATION="/tmp/$(basename "${location}")"
+				LOCATIONS="/tmp/$(basename ${URL_LOCATION}) ${LOCATIONS}"
 				;;
 
 			*/*=*)
@@ -655,10 +667,13 @@ is_nice_device ()
 {
 	sysfs_path="${1#/sys}"
 
-	if /lib/udev/path_id "${sysfs_path}" | grep -E -q "ID_PATH=(usb|pci-|platform-mmc)"
+	if /lib/udev/path_id "${sysfs_path}" | grep -E -q "ID_PATH=(usb|pci-|platform-orion-ehci|platform-mmc|platform-mxsdhci|)"
 	then
 		return 0
 	elif echo "${sysfs_path}" | grep -q '^/block/vd[a-z]$'
+	then
+		return 0
+	elif echo ${sysfs_path} | grep -q "^/block/dm-"
 	then
 		return 0
 	fi
@@ -765,7 +780,56 @@ do_netmount ()
 	udevadm trigger
 	udevadm settle
 
+	if [ -z "${NETBOOT}" ] && [ -z "${FETCH}" ] && \
+	   [ -z "${HTTPFS}" ] && [ -z "${FTPFS}" ]
+	then
+
+	# if ethdevice was not specified on the kernel command line
+	# make sure we try to get a working network configuration
+	# for *every* present network device (except for loopback of course)
+	if [ -z "$ETHDEVICE" ] ; then
+		echo "If you want to boot from a specific device use bootoption ethdevice=..."
+		for device in /sys/class/net/*; do
+			dev=${device##*/} ;
+			if [ "$dev" != "lo" ] ; then
+				ETHDEVICE="$ETHDEVICE $dev"
+			fi
+		done
+	fi
+
+	# split args of ethdevice=eth0,eth1 into "eth0 eth1"
+	for device in $(echo $ETHDEVICE | sed 's/,/ /g') ; do
+		devlist="$devlist $device"
+	done
+
+	[ -n "$ETHDEV_TIMEOUT" ] || ETHDEV_TIMEOUT=15
+	echo "Using timeout of $ETHDEV_TIMEOUT seconds for network configuration."
+
+	# this is tricky (and ugly) because ipconfig sometimes just hangs/runs into
+	# an endless loop; iff execution fails give it two further tries, that's
+	# why we use '$devlist $devlist $devlist' for the other for loop
+	for dev in $devlist $devlist $devlist ; do
+		echo "Executing ipconfig -t $ETHDEV_TIMEOUT $dev"
+		ipconfig -t "$ETHDEV_TIMEOUT" $dev | tee -a /netboot.config &
+		jobid=$!
+		sleep "$ETHDEV_TIMEOUT" ; sleep 1
+		if [ -r /proc/"$jobid"/status ] ; then
+			echo "Killing job $jobid for device $dev as ipconfig ran into recursion..."
+			kill -9 $jobid
+		fi
+
+		# if configuration of device worked we should have an assigned
+		# IP address, iff so let's use the according as $DEVICE for later usage
+		# simple and primitive approach which seems to work fine
+		if ifconfig $dev | grep -q 'inet.*addr:' ; then
+			export DEVICE="$dev"
+			break
+		fi
+	done
+
+	else
 	ipconfig ${DEVICE} | tee /netboot.config
+	fi
 
 	# source relevant ipconfig output
 	OLDHOSTNAME=${HOSTNAME}
@@ -774,7 +838,8 @@ do_netmount ()
 	export HOSTNAME
 
 	# Check if we have a network device at all
-	if ! ls /sys/class/net/eth0 > /dev/null 2>&1 && \
+	if ! ls /sys/class/net/"$DEVICE" > /dev/null 2>&1 && \
+	   ! ls /sys/class/net/eth0 > /dev/null 2>&1 && \
 	   ! ls /sys/class/net/wlan0 > /dev/null 2>&1 && \
 	   ! ls /sys/class/net/ath0 > /dev/null 2>&1 && \
 	   ! ls /sys/class/net/ra0 > /dev/null 2>&1
@@ -1029,14 +1094,23 @@ try_snap ()
 			RES=$?
 		else
 			# cpio.gz snapshot
-			cd "${snap_mount}"
-			zcat "${snapback}/${snapfile}" | /bin/cpio --extract --preserve-modification-time --no-absolute-filenames --sparse --unconditional --make-directories > /dev/null 2>&1
-			RES=$?
-			if [ "${RES}" != "0" ]
+
+			# Unfortunately klibc's cpio is incompatible with the
+			# rest of the world; everything else requires -u -d,
+			# while klibc doesn't implement them. Try to detect
+			# whether it's in use.
+			cpiopath="$(which cpio)" || true
+			if [ "$cpiopath" ] && grep -aq /lib/klibc "$cpiopath"
 			then
-				log_warning_msg "failure to \"zcat ${snapback}/${snapfile} | /bin/cpio --extract --preserve-modification-time --no-absolute-filenames --sparse --unconditional --make-directories\""
+				cpioargs=
+			else
+				cpioargs='--unconditional --make-directories'
 			fi
-			cd "${OLDPWD}"
+
+			if ! (cd "${snap_mount}" && zcat "${snapback}/${snapfile}" | cpio $cpioargs --extract --preserve-modification-time --no-absolute-filenames --sparse 2>/dev/null)
+			then
+				log_warning_msg "failure to \"zcat ${snapback}/${snapfile} | cpio $cpioargs --extract --preserve-modification-time --no-absolute-filenames --sparse\""
+			fi
 		fi
 
 		umount "${snapback}" ||  log_warning_msg "failure to \"umount ${snapback}\""
@@ -1077,7 +1151,7 @@ try_snap ()
 		return 1
 	fi
 
-	echo "export ${snap_type}SNAP="${snap_mount}":${snapdev}:${snapfile}" >> /etc/live.conf # for resync on reboot/halt
+	echo "export ${snap_type}SNAP="/cow${snap_mount#$rootmnt}":${snapdev}:${snapfile}" >> /etc/live.conf # for resync on reboot/halt
 	return 0
 }
 
@@ -1367,6 +1441,8 @@ setup_unionfs ()
 			case "${UNIONTYPE}" in
 				unionfs-fuse)
 					(ulimit -n 16384; unionfs-fuse -o cow -o noinitgroups -o default_permissions -o allow_other -o use_ino -o suid /cow=RW:${exposedrootfs}${dir} "${rootmnt}${dir}" || panic "mount ${UNIONTYPE} on ${rootmnt}${dir} failed with option cow,noinitgroups,default_permissions,allow_other,use_ino,suid=/cow=RW:${exposedrootfs}${dir}")
+					mkdir -p /dev/.initramfs/varrun
+					pidof unionfs-fuse >> /dev/.initramfs/varrun/sendsigs.omit || true
 					;;
 
 				*)
@@ -1378,6 +1454,8 @@ setup_unionfs ()
 		case "${UNIONTYPE}" in
 			unionfs-fuse)
 				(ulimit -n 16384; unionfs-fuse -o cow -o noinitgroups -o default_permissions -o allow_other -o use_ino -o suid /cow=RW:${rofsstring} "${rootmnt}" || panic "mount ${UNIONTYPE} on ${rootmnt} failed with option cow,noinitgroups,default_permissions,allow_other,use_ino,suid=/cow:RW:${rofsstring}")
+				mkdir -p /dev/.initramfs/varrun
+				pidof unionfs-fuse >> /dev/.initramfs/varrun/sendsigs.omit || true
 				;;
 
 			*)
@@ -1454,12 +1532,31 @@ check_dev ()
 	# support for fromiso=.../isofrom=....
 	if [ -n "$FROMISO" ]
 	then
-		mkdir /isofrom
-		ISO_DEVICE="$(echo $FROMISO | sed 's|\(/dev/[a-z]*[0-9]*\).*|\1|')"
-		mount "$ISO_DEVICE" /isofrom
-		ISO_NAME="$(echo $FROMISO | sed 's|/dev/[a-z]*[0-9]*/||')"
-		loopdevname=$(setup_loop "/isofrom/${ISO_NAME}" "loop" "/sys/block/loop*" "" '')
-		devname="${loopdevname}"
+		ISO_DEVICE=$(dirname $FROMISO)
+		if ! [ -b $ISO_DEVICE ]
+		then
+			# to support unusual device names like /dev/cciss/c0d0p1
+			# as well we have to identify the block device name, let's
+			# do that for up to 15 levels
+			i=15
+			while [ -n "$ISO_DEVICE" ] && [ "$i" -gt 0 ]
+			do
+				ISO_DEVICE=$(dirname ${ISO_DEVICE})
+				[ -b "$ISO_DEVICE" ] && break
+				i=$(($i -1))
+		        done
+		fi
+
+		if [ "$ISO_DEVICE" = "/" ]
+		then
+			echo "Warning: device for bootoption isofrom= ($FROMISO) not found.">>/live.log
+		else
+			mkdir /isofrom
+			mount "$ISO_DEVICE" /isofrom
+			ISO_NAME="$(echo $FROMISO | sed "s|$ISO_DEVICE||")"
+			loopdevname=$(setup_loop "/isofrom/${ISO_NAME}" "loop" "/sys/block/loop*" "" '')
+			devname="${loopdevname}"
+		fi
 	fi
 
 	if [ -z "${devname}" ]
@@ -1479,6 +1576,7 @@ check_dev ()
 			umount $mountpoint
 		fi
 	fi
+	[ -e "$devname" ] || continue
 
 	if [ -n "${LIVE_MEDIA_OFFSET}" ]
 	then
@@ -1490,7 +1588,10 @@ check_dev ()
 
 	if is_supported_fs ${fstype}
 	then
+		devuid=$(blkid -o value -s UUID "$devname")
+		[ -n "$devuid" ] && grep -qs "\<$devuid\>" $tried && continue
 		mount -t ${fstype} -o ro,noatime "${devname}" ${mountpoint} || continue
+		[ -n "$devuid" ] && echo "$devuid" >> $tried
 
 		if is_live_path ${mountpoint} && \
 			([ "${skip_uuid_check}" ] || matches_uuid ${mountpoint})
@@ -1575,9 +1676,22 @@ find_livefs ()
 	esac
 
 	# or do the scan of block devices
+	# prefer removable devices over non-removable devices, so scan them first
 	for sysblock in $(echo /sys/block/* | tr ' ' '\n' | grep -vE "/(loop|ram|dm-|fd)")
 	do
+		if [ "$(cat ${sysblock}/removable)" = "1" ]
+		then
+			removable_devices_to_scan="$removable_devices_to_scan $sysblock"
+		else
+			nonremovable_devices_to_scan="$nonremovable_devices_to_scan $sysblock"
+		fi
+	done
+	devices_to_scan="$removable_devices_to_scan $nonremovable_devices_to_scan"
+
+	for sysblock in $devices_to_scan
+	do
 		devname=$(sys2dev "${sysblock}")
+		[ -e "$devname" ] || continue
 		fstype=$(get_fstype "${devname}")
 
 		if /lib/udev/cdrom_id ${devname} > /dev/null
@@ -1649,6 +1763,14 @@ integrity_check ()
 	fi
 }
 
+start_usplash_pulse ()
+{
+	if [ -x /sbin/usplash_write ]
+	then
+		/sbin/usplash_write "PULSELOGO"
+	fi
+}
+
 mountroot ()
 {
         if [ -x /scripts/local-top/cryptroot ]; then
@@ -1668,6 +1790,7 @@ mountroot ()
 	Arguments
 
 	set_usplash_timeout
+	start_usplash_pulse
 
 	maybe_break live-premount
 	log_begin_msg "Running /scripts/live-premount"
@@ -1777,4 +1900,8 @@ mountroot ()
 	exec 2>&7 7>&-
 	kill ${tailpid}
 	[ -w "${rootmnt}/var/log/" ] && cp live.log "${rootmnt}/var/log/" 2>/dev/null
+	if [ -f /etc/live.conf ]
+	then
+		cp /etc/live.conf "${rootmnt}/etc/"
+	fi
 }
