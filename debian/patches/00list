@@ -2,7 +2,6 @@
 05_boot_failure_message_grml.dpatch
 07_support_findiso.dpatch
 09_fix_resolvconf_pxeboot.dpatch
-10_support_ethdevice.dpatch
 11_dhcphostname.patch
 12_uuid_support.dpatch
 13_always_display_warnings_and_failures.dpatch
