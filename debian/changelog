@@ -1,3 +1,14 @@
+live-initramfs (1.215.1-1grml.01) unstable; urgency=low
+
+  * Drop support for raw images on block devices. We never
+    officially supported this feature at all, it is
+    too unreliable for robust booting.
+  * Add debian/patches/14_no_blkid_on_lenny.dpatch to make
+    sure we fall back to udev's vol_id if blkid isn't
+    available (as on lenny).
+
+ -- Michael Prokop <mika@grml.org>  Thu, 27 May 2010 23:48:57 +0200
+
 live-initramfs (1.215.1-1grml.00) unstable; urgency=low
 
   * Sync with Debian's version 1.215.1-1.
