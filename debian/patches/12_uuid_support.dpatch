@@ -12,10 +12,10 @@
 ## DP: * no bootid.txt + ignore_bootid=...                => boots
 
 @DPATCH@
-diff -urNad live-initramfs-grml~/scripts/live live-initramfs-grml/scripts/live
---- live-initramfs-grml~/scripts/live	2010-02-01 20:31:44.410884646 +0100
-+++ live-initramfs-grml/scripts/live	2010-02-01 20:32:09.131721944 +0100
-@@ -54,6 +54,12 @@
+diff -urNad '--exclude=CVS' '--exclude=.svn' '--exclude=.git' '--exclude=.arch' '--exclude=.hg' '--exclude=_darcs' '--exclude=.bzr' live-initramfs-grml~/scripts/live live-initramfs-grml/scripts/live
+--- live-initramfs-grml~/scripts/live	2010-05-27 23:42:10.129873950 +0200
++++ live-initramfs-grml/scripts/live	2010-05-27 23:43:46.209031380 +0200
+@@ -85,6 +85,12 @@
  				export ACCESS
  				;;
  
@@ -28,7 +28,7 @@ diff -urNad live-initramfs-grml~/scripts/live live-initramfs-grml/scripts/live
  			console=*)
  				DEFCONSOLE="${ARGUMENT#*=}"
  				export DEFCONSOLE
-@@ -129,6 +135,11 @@
+@@ -165,6 +171,11 @@
  				export USERFULLNAME LIVECONF
  				;;
  
@@ -40,7 +40,7 @@ diff -urNad live-initramfs-grml~/scripts/live live-initramfs-grml/scripts/live
  			ignore_uuid)
  				IGNORE_UUID="Yes"
  				export IGNORE_UUID
-@@ -556,6 +567,41 @@
+@@ -597,6 +608,41 @@
  	return 1
  }
  
@@ -82,8 +82,8 @@ diff -urNad live-initramfs-grml~/scripts/live live-initramfs-grml/scripts/live
  matches_uuid ()
  {
  	if [ "${IGNORE_UUID}" ] || [ ! -e /conf/uuid.conf ]
-@@ -1504,7 +1550,7 @@
- 		fi
+@@ -1616,7 +1662,7 @@
+  		fi
  
  		if is_live_path ${mountpoint} && \
 -			([ "${skip_uuid_check}" ] || matches_uuid ${mountpoint})
@@ -91,3 +91,22 @@ diff -urNad live-initramfs-grml~/scripts/live live-initramfs-grml/scripts/live
  		then
  			echo ${mountpoint}
  			return 0
+@@ -1731,18 +1777,6 @@
+ 					return 0
+ 				fi
+ 			done
+-		elif [ "${fstype}" = "squashfs" -o \
+-			"${fstype}" = "ext2" -o \
+-			"${fstype}" = "ext3" -o \
+-			"${fstype}" = "ext4" -o \
+-			"${fstype}" = "jffs2" ]
+-		then
+-			# This is an ugly hack situation, the block device has
+-			# an image directly on it.  It's hopefully
+-			# live-initramfs, so take it and run with it.
+-			ln -s "${devname}" "${devname}.${fstype}"
+-			echo "${devname}.${fstype}"
+-			return 0
+ 		fi
+ 	done
+ 
